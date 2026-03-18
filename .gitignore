@@ -1,0 +1,15 @@
+# Build results
+bin/
+obj/
+
+# IDE
+.vs/
+.vscode/
+
+# Logs
+*.log
+app.log
+
+# User settings (contiene credenciales sensibles)
+*.user
+appsettings.json
