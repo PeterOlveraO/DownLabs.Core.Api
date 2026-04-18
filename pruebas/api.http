@@ -1,21 +1,482 @@
 @host = http://localhost:5145
 
-### Test de conexion a Supabase
-GET {{host}}/api/supabase/test
+# ========================================
+# HEALTH CHECK
+# ========================================
+
+### Health Check
+# Verifica que el servidor esté funcionando
+GET {{host}}/api/health
+
+# Respuesta esperada:
+# {
+#   "status": "OK",
+#   "timestamp": "2026-04-17T12:00:00Z"
+# }
 
 ---
 
-### Registrar nuevo cliente
-POST {{host}}/api/clientes/register
+# ========================================
+# CLIENTES
+# ========================================
+
+### GET - Listar clientes (paginación básica)
+# Obtiene todos los clientes con paginación
+GET {{host}}/api/clientes?page=1&pageSize=5
+
+# Respuesta exitosa:
+# {
+#   "success": true,
+#   "data": [...],
+#   "pagination": {
+#     "page": 1,
+#     "pageSize": 5,
+#     "total": 10,
+#     "totalPages": 2,
+#     "hasNext": true,
+#     "hasPrev": false
+#   }
+# }
+
+### GET - Buscar clientes por nombre o correo
+GET {{host}}/api/clientes?search=empresa&page=1&pageSize=20
+
+### GET - Obtener cliente por ID
+GET {{host}}/api/clientes/00000000-0000-0000-0000-000000000000
+
+# Error not found (404):
+# {
+#   "success": false,
+#   "error": "NotFound",
+#   "message": "Cliente no encontrado"
+# }
+
+### POST - Crear nuevo cliente
+POST {{host}}/api/clientes
 Content-Type: application/json
 
 {
   "nombre_empresa": "Empresa Test",
-  "correo_contacto": "test@test.com",
-  "contrasena": "password123"
+  "correo_contacto": "test@email.com",
+  "telefono_contacto": "1234567890",
+  "rfc": "XAXX010101000",
+  "codigo_postal_fiscal": "01200"
 }
+
+# Error validación (400):
+# {
+#   "success": false,
+#   "error": "ValidationError",
+#   "message": "El nombre de la empresa es requerido"
+# }
+
+### PUT - Actualizar cliente completo
+PUT {{host}}/api/clientes/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "nombre_empresa": "Empresa Actualizada",
+  "correo_contacto": "actualizado@email.com",
+  "telefono_contacto": "9876543210",
+  "rfc": "XAXX010101001",
+  "codigo_postal_fiscal": "01201"
+}
+
+### PATCH - Actualizar cliente parcialmente
+PATCH {{host}}/api/clientes/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "telefono_contacto": "9876543210"
+}
+
+### DELETE - Eliminar cliente
+DELETE {{host}}/api/clientes/00000000-0000-0000-0000-000000000000
+
+# Respuesta exitosa:
+# {
+#   "success": true,
+#   "message": "Cliente eliminado correctamente"
+# }
 
 ---
 
-### Login de cliente
-GET {{host}}/api/clientes/login?correo_contacto=test@test.com&contrasena=password123
+# ========================================
+# MAYORISTAS
+# ========================================
+
+### GET - Listar mayoristas
+GET {{host}}/api/mayoristas?page=1&pageSize=20
+
+### GET - Buscar mayoristas
+GET {{host}}/api/mayoristas?search= Distribuidora
+
+### GET - Obtener mayorista por ID
+GET {{host}}/api/mayoristas/00000000-0000-0000-0000-000000000000
+
+### POST - Crear mayorista
+POST {{host}}/api/mayoristas
+Content-Type: application/json
+
+{
+  "nombre_empresa": "Mayorista Test",
+  "ubicacion": "CDMX",
+  "correo_contacto": "mayorista@test.com",
+  "telefono_contacto": "1234567890",
+  "nivel_confianza": 5
+}
+
+### PUT - Actualizar mayorista completo
+PUT {{host}}/api/mayoristas/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "nombre_empresa": "Mayorista Actualizado",
+  "ubicacion": "Guadalajara",
+  "correo_contacto": "nuevo@test.com"
+}
+
+### PATCH - Actualizar mayorista parcialmente
+PATCH {{host}}/api/mayoristas/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "nivel_confianza": 8
+}
+
+### DELETE - Eliminar mayorista
+DELETE {{host}}/api/mayoristas/00000000-0000-0000-0000-000000000000
+
+---
+
+# ========================================
+# OPERADORES
+# ========================================
+
+### GET - Listar operadores
+GET {{host}}/api/operadores?page=1&pageSize=20
+
+### GET - Filtrar por rol
+GET {{host}}/api/operadores?rol=admin
+
+### GET - Buscar operadores
+GET {{host}}/api/operadores?search=admin
+
+### GET - Obtener operador por ID
+GET {{host}}/api/operadores/00000000-0000-0000-0000-000000000000
+
+### POST - Crear operador
+POST {{host}}/api/operadores
+Content-Type: application/json
+
+{
+  "nombre": "Operador Test",
+  "correo": "operador@test.com",
+  "contrasena": "password123",
+  "rol": "admin"
+}
+
+# Error validación:
+# {
+#   "success": false,
+#   "error": "ValidationError",
+#   "message": "El nombre es requerido"
+# }
+
+### PUT - Actualizar operador completo
+PUT {{host}}/api/operadores/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "nombre": "Operador Actualizado",
+  "correo": "actualizado@test.com",
+  "rol": "editor"
+}
+
+### PATCH - Actualizar operador parcialmente
+PATCH {{host}}/api/operadores/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "rol": "admin"
+}
+
+### DELETE - Eliminar operador
+DELETE {{host}}/api/operadores/00000000-0000-0000-0000-000000000000
+
+---
+
+# ========================================
+# CATÁLOGO DE PRODUCTOS
+# ========================================
+
+### GET - Listar productos
+GET {{host}}/api/catalogo-productos?page=1&pageSize=20
+
+### GET - Filtrar por categoría
+GET {{host}}/api/catalogo-productos?categoria=electronica
+
+### GET - Filtrar por mayorista
+GET {{host}}/api/catalogo-productos?id_mayorista=00000000-0000-0000-0000-000000000000
+
+### GET - Filtrar por categoría y mayorista
+GET {{host}}/api/catalogo-productos?categoria=electronica&id_mayorista=00000000-0000-0000-0000-000000000000
+
+### GET - Buscar productos
+GET {{host}}/api/catalogo-productos?search=celular
+
+### GET - Obtener producto por ID
+GET {{host}}/api/catalogo-productos/00000000-0000-0000-0000-000000000000
+
+### POST - Crear producto
+POST {{host}}/api/catalogo-productos
+Content-Type: application/json
+
+{
+  "id_mayorista": "00000000-0000-0000-0000-000000000000",
+  "nombre_articulo": "Producto Test",
+  "categoria": "electronica",
+  "precio_mayorista": 100.00,
+  "precio_dwlabs": 150.00,
+  "materiales": "plastico",
+  "moq": 10
+}
+
+# Error validación:
+# {
+#   "success": false,
+#   "error": "ValidationError",
+#   "message": "El nombre del articulo es requerido"
+# }
+
+### PUT - Actualizar producto completo
+PUT {{host}}/api/catalogo-productos/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "nombre_articulo": "Producto Actualizado",
+  "categoria": "hogar",
+  "precio_mayorista": 120.00,
+  "precio_dwlabs": 180.00
+}
+
+### PATCH - Actualizar producto parcialmente
+PATCH {{host}}/api/catalogo-productos/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "precio_dwlabs": 200.00
+}
+
+### DELETE - Eliminar producto
+DELETE {{host}}/api/catalogo-productos/00000000-0000-0000-0000-000000000000
+
+---
+
+# ========================================
+# SOLICITUDES DE COTIZACIÓN
+# ========================================
+
+### GET - Listar solicitudes
+GET {{host}}/api/solicitudes-cotizacion?page=1&pageSize=20
+
+### GET - Filtrar por estado
+GET {{host}}/api/solicitudes-cotizacion?estado=pendiente
+
+### GET - Filtrar por nivel de urgencia
+GET {{host}}/api/solicitudes-cotizacion?nivel_urgencia=alta
+
+### GET - Filtrar por cliente
+GET {{host}}/api/solicitudes-cotizacion?id_cliente=00000000-0000-0000-0000-000000000000
+
+### GET - Buscar solicitudes
+GET {{host}}/api/solicitudes-cotizacion?search=celular
+
+### GET - Obtener solicitud por ID
+GET {{host}}/api/solicitudes-cotizacion/00000000-0000-0000-0000-000000000000
+
+### POST - Crear solicitud
+POST {{host}}/api/solicitudes-cotizacion
+Content-Type: application/json
+
+{
+  "id_cliente": "00000000-0000-0000-0000-000000000000",
+  "descripcion_articulo": "Celular Samsung Galaxy",
+  "especificaciones_requeridas": {"color": "negro", "ram": "8gb"},
+  "nivel_urgencia": "alta",
+  "estado_solicitud": "pendiente"
+}
+
+### PUT - Actualizar solicitud completa
+PUT {{host}}/api/solicitudes-cotizacion/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "descripcion_articulo": "Celular actualizado",
+  "nivel_urgencia": "normal",
+  "estado_solicitud": "procesando"
+}
+
+### PATCH - Actualizar parcialmente
+PATCH {{host}}/api/solicitudes-cotizacion/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "estado_solicitud": "aprobada"
+}
+
+### DELETE - Eliminar solicitud
+DELETE {{host}}/api/solicitudes-cotizacion/00000000-0000-0000-0000-000000000000
+
+---
+
+# ========================================
+# COTIZACIONES
+# ========================================
+
+### GET - Listar cotizaciones
+GET {{host}}/api/cotizaciones?page=1&pageSize=20
+
+### GET - Filtrar por estado
+GET {{host}}/api/cotizaciones?estado=pendiente
+
+### GET - Filtrar por solicitud
+GET {{host}}/api/cotizaciones?id_solicitud=00000000-0000-0000-0000-000000000000
+
+### GET - Filtrar por producto
+GET {{host}}/api/cotizaciones?id_producto=00000000-0000-0000-0000-000000000000
+
+### GET - Obtener cotización por ID
+GET {{host}}/api/cotizaciones/00000000-0000-0000-0000-000000000000
+
+### POST - Crear cotización
+POST {{host}}/api/cotizaciones
+Content-Type: application/json
+
+{
+  "id_solicitud": "00000000-0000-0000-0000-000000000000",
+  "id_producto": "00000000-0000-0000-0000-000000000000",
+  "precio_final_cliente": 200.00,
+  "costo_envio": 50.00,
+  "estado": "pendiente"
+}
+
+### PUT - Actualizar cotización completa
+PUT {{host}}/api/cotizaciones/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "precio_final_cliente": 250.00,
+  "costo_envio": 60.00,
+  "estado": "aprobada"
+}
+
+### PATCH - Actualizar parcialmente
+PATCH {{host}}/api/cotizaciones/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "estado": "aprobada"
+}
+
+### DELETE - Eliminar cotización
+DELETE {{host}}/api/cotizaciones/00000000-0000-0000-0000-000000000000
+
+---
+
+# ========================================
+# PEDIDOS DE CRÉDITO
+# ========================================
+
+### GET - Listar pedidos
+GET {{host}}/api/pedidos-credito?page=1&pageSize=20
+
+### GET - Filtrar por estado de pago
+GET {{host}}/api/pedidos-credito?estado_pago=pendiente
+
+### GET - Filtrar por requiere crédito
+GET {{host}}/api/pedidos-credito?requiere_credito=true
+
+### GET - Filtrar por cotización
+GET {{host}}/api/pedidos-credito?id_cotizacion=00000000-0000-0000-0000-000000000000
+
+### GET - Obtener pedido por ID
+GET {{host}}/api/pedidos-credito/00000000-0000-0000-0000-000000000000
+
+### POST - Crear pedido
+POST {{host}}/api/pedidos-credito
+Content-Type: application/json
+
+{
+  "id_cotizacion": "00000000-0000-0000-0000-000000000000",
+  "requiere_credito": true,
+  "cargo_financiamiento": 10.50,
+  "monto_total_deuda": 250.00,
+  "estado_pago": "pendiente",
+  "fecha_inicio_credito": "2026-05-01",
+  "fecha_vencimiento_credito": "2026-11-01",
+  "requiere_factura": true,
+  "tipo_pago": "credito"
+}
+
+### PUT - Actualizar pedido completo
+PUT {{host}}/api/pedidos-credito/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "requiere_credito": true,
+  "cargo_financiamiento": 15.00,
+  "monto_total_deuda": 300.00,
+  "estado_pago": "pagando",
+  "tipo_pago": "contado"
+}
+
+### PATCH - Actualizar parcialmente
+PATCH {{host}}/api/pedidos-credito/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "estado_pago": "completado"
+}
+
+### DELETE - Eliminar pedido
+DELETE {{host}}/api/pedidos-credito/00000000-0000-0000-0000-000000000000
+
+---
+
+# ========================================
+# PRUEBAS DE ERROR
+# ========================================
+
+### GET recurso no existente (404)
+GET {{host}}/api/clientes/99999999-9999-9999-9999-999999999999
+
+# Respuesta:
+# {
+#   "success": false,
+#   "error": "NotFound",
+#   "message": "Cliente no encontrado"
+# }
+
+### POST sin campos requeridos (400)
+POST {{host}}/api/clientes
+Content-Type: application/json
+
+{}
+
+# Respuesta:
+# {
+#   "success": false,
+#   "error": "ValidationError",
+#   "message": "El nombre de la empresa es requerido"
+# }
+
+### DELETE recurso no existente (404)
+DELETE {{host}}/api/clientes/99999999-9999-9999-9999-999999999999
+
+# Respuesta:
+# {
+#   "success": false,
+#   "error": "NotFound",
+#   "message": "Cliente no encontrado"
+# }

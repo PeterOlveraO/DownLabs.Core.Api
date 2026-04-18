@@ -7,7 +7,7 @@ namespace DownLabs.Core.Api.Endpoints;
 public static class OperadorEndpoints
 {
     private const string TableName = "operadores";
-    private const string IdColumn = "id_operador";
+    private const string IdColumn = "id";
 
     public static void RegisterOperadorEndpoints(this WebApplication app)
     {
@@ -24,7 +24,7 @@ public static class OperadorEndpoints
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? search = null,
-        [FromQuery] string? rol = null,
+        [FromQuery] bool? activo = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -39,13 +39,14 @@ public static class OperadorEndpoints
             {
                 operadores = operadores.Where(o => 
                     (o.nombre?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (o.correo?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)
+                    (o.apellido?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (o.email?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)
                 ).ToList();
             }
 
-            if (!string.IsNullOrWhiteSpace(rol))
+            if (activo.HasValue)
             {
-                operadores = operadores.Where(o => o.rol?.Equals(rol, StringComparison.OrdinalIgnoreCase) == true).ToList();
+                operadores = operadores.Where(o => o.activo == activo.Value).ToList();
             }
 
             var total = operadores.Count;
@@ -106,19 +107,25 @@ public static class OperadorEndpoints
                 return Results.BadRequest(new { success = false, error = "ValidationError", message = "El nombre es requerido" });
             }
 
-            if (string.IsNullOrWhiteSpace(operador.correo))
+            if (string.IsNullOrWhiteSpace(operador.email))
             {
-                return Results.BadRequest(new { success = false, error = "ValidationError", message = "El correo es requerido" });
+                return Results.BadRequest(new { success = false, error = "ValidationError", message = "El email es requerido" });
             }
 
-            operador.id_operador = Guid.NewGuid();
+            if (string.IsNullOrWhiteSpace(operador.apellido))
+            {
+                return Results.BadRequest(new { success = false, error = "ValidationError", message = "El apellido es requerido" });
+            }
+
+            operador.id = Guid.NewGuid();
+            operador.activo = true;
             operador.created_at = DateTime.UtcNow;
             operador.updated_at = DateTime.UtcNow;
 
             var created = await crudService.CreateAsync<Operador>(TableName, operador, cancellationToken)
                 .ConfigureAwait(false);
             
-            return Results.Created($"/api/operadores/{created.id_operador}", new { success = true, data = created });
+            return Results.Created($"/api/operadores/{created.id}", new { success = true, data = created });
         }
         catch (InvalidOperationException ex)
         {
@@ -140,7 +147,7 @@ public static class OperadorEndpoints
             if (existing is null)
                 return Results.NotFound(new { success = false, error = "NotFound", message = "Operador no encontrado" });
 
-            operador.id_operador = id;
+            operador.id = id;
             operador.created_at = existing.created_at;
             operador.updated_at = DateTime.UtcNow;
 
@@ -171,10 +178,16 @@ public static class OperadorEndpoints
 
             if (operadorUpdate.nombre is not null)
                 existing.nombre = operadorUpdate.nombre;
-            if (operadorUpdate.correo is not null)
-                existing.correo = operadorUpdate.correo;
-            if (operadorUpdate.rol is not null)
-                existing.rol = operadorUpdate.rol;
+            if (operadorUpdate.apellido is not null)
+                existing.apellido = operadorUpdate.apellido;
+            if (operadorUpdate.email is not null)
+                existing.email = operadorUpdate.email;
+            if (operadorUpdate.telefono is not null)
+                existing.telefono = operadorUpdate.telefono;
+            if (operadorUpdate.contrasena is not null)
+                existing.contrasena = operadorUpdate.contrasena;
+            if (operadorUpdate.activo)
+                existing.activo = operadorUpdate.activo;
             
             existing.updated_at = DateTime.UtcNow;
 
