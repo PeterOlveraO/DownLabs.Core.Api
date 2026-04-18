@@ -6,6 +6,7 @@ API RESTful para la plataforma DownLabs construida con .NET 9.0 y Supabase.
 
 - **.NET 9.0** con ASP.NET Core Web API
 - **Supabase** como base de datos PostgreSQL
+- **Supabase Auth** para autenticación de usuarios
 - **Patron Minimal API** con endpoints organizados
 - **Paginacion** automatica en todos los endpoints de lista
 - **Filtrado** avanzado por diferentes campos
@@ -48,6 +49,7 @@ La API estara disponible en `http://localhost:5145`
 
 | Recurso | URL Base | Descripcion |
 |----------|----------|-------------|
+| Auth | `/api/auth` | Registro y login de usuarios |
 | Clientes | `/api/clientes` | Clientes registrados |
 | Mayoristas | `/api/mayoristas` | Empresas mayoristas |
 | Operadores | `/api/operadores` | Operadores del sistema |
@@ -55,6 +57,39 @@ La API estara disponible en `http://localhost:5145`
 | Solicitudes | `/api/solicitudes-cotizacion` | Solicitudes de cotizacion |
 | Cotizaciones | `/api/cotizaciones` | Cotizaciones generadas |
 | Pedidos | `/api/pedidos-credito` | Pedidos con credito |
+
+### Autenticación
+
+```bash
+# Registrar usuario
+POST /api/auth/register
+{
+  "email": "user@email.com",
+  "password": "password123",
+  "rol": "cliente",  # "cliente" | "mayorista" | "operador"
+  "nombre_empresa": "Mi Empresa"  # opcional
+}
+
+# Iniciar sesión
+POST /api/auth/login
+{
+  "email": "user@email.com",
+  "password": "password123"
+}
+```
+
+Respuesta login:
+```json
+{
+  "success": true,
+  "data": {
+    "access_token": "...",
+    "user_id": "...",
+    "email": "user@email.com",
+    "rol": "cliente"
+  }
+}
+```
 
 ### Metodos HTTP Disponibles
 
@@ -150,11 +185,10 @@ Todos los errores retornan formato JSON consistente:
 > [!WARNING]
 > Este proyecto es solo para fines educativos/demostracion.
 >
-> - Contrasenas almacenadas en texto plano
-> - Sin autenticacion JWT
-> - Sin validacion de entrada
+> - Contraseñas gestionadas por Supabase Auth
+> - Tokens JWT proporcionados por Supabase
 >
-> Para produccion: agregar BCrypt, JWT, validacion de entrada y HTTPS.
+> Para producción: agregar validaciones adicionales y HTTPS.
 
 ## Construir
 
@@ -184,22 +218,22 @@ dotnet list package --outdated
 
 ## Ultimo Lanzamiento
 
+### Version 1.2.0 (2026-04-18)
+
+**Autenticación con Supabase Auth:**
+
+- Sistema de registro (`/api/auth/register`)
+- Sistema de login (`/api/auth/login`)
+- Retorna access_token y rol del usuario
+- Trigger automático crea registro en tabla correspondiente
+
+**Archivos Nuevos:**
+
+- `01_migracion_auth.sql`: Script de migración
+- `pruebas/api.http`: Archivo de pruebas API
+- `Endpoints/AuthEndpoints.cs`: Endpoint de autenticación
+
 ### Version 1.1.0 (2026-04-18)
 
-**Nuevas Funcionalidades:**
-
 - Datos de prueba completos en todas las tablas
-- 29 clientes, 17 mayoristas, 16 operadores, 44 productos, 22 solicitudes, 21 cotizaciones, 21 pedidos
-
-**Mejoras:**
-
-- Modelos C# actualizados para coincidir con esquema de Supabase
-- Endpoints con valores por defecto correctos segun constraints
-- Catalogo expandido con 30 productos adicionales con variaciones
-- Busqueda por descripcion en productos
-
-**Correcciones:**
-
-- Schema mismatch en Operador corregido
-- CHECK constraints manejados correctamente
-- Tipos de datos corregidos ( Guid, decimal no/nullable)
+- Modelos C# actualizados para esquema de Supabase

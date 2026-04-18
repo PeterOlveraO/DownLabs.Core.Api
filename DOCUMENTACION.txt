@@ -42,6 +42,7 @@ El proyecto sigue una arquitectura limpia organizada en capas:
 
 /Endpoints
     Define los endpoints de la API para cada recurso:
+    - AuthEndpoints.cs        -> Registro y login de usuarios
     - ClienteEndpoints.cs
     - MayoristaEndpoints.cs
     - OperadorEndpoints.cs
@@ -50,7 +51,28 @@ El proyecto sigue una arquitectura limpia organizada en capas:
     - CotizacionDownlabsEndpoints.cs
     - PedidoCreditoEndpoints.cs
 
-Cada archivo de endpoints sigue el mismo patron de diseno.
+Cada archivo de endpoints sigue el mismo patrón de diseño.
+
+
+AUTENTICACIÓN
+================================================================================
+
+El sistema usa Supabase Auth para gestionar usuarios:
+
+Registro (/api/auth/register):
+- Email, password, rol (cliente/mayorista/operador)
+- Para clientes/mayoristas: nombre_empresa
+- Para operadores: nombre, apellido
+- Crea automáticamente registro en tabla correspondiente
+
+Login (/api/auth/login):
+- Email y password
+- Retorna: access_token, user_id, email, rol
+
+El campo "rol" determina en qué tabla se crea el usuario:
+- "cliente" -> tabla clientes
+- "mayorista" -> tabla mayoristas
+- "operador" -> tabla operadores
 
 
 FLUJO DE DATOS
@@ -183,17 +205,14 @@ Tipos de error:
 SEGURIDAD (NOTA IMPORTANTE)
 ================================================================================
 
-Este proyecto es para fines educativos/demostracion:
+Este proyecto usa Supabase Auth para autenticación:
 
-- Contrasenas almacenadas en texto plano en la base de datos
-- Sin autenticacion JWT
-- Sin validacion de entrada rigurosa
-- Sin encriptacion
+- Contraseñas gestionadas por Supabase Auth (no en texto plano)
+- Tokens JWT proporcionados por Supabase
+- Registro automático en tabla según rol (cliente/mayorista/operador)
 
 PARA PRODUCCION se recomienda:
-- Implementar autenticacion JWT
-- Encriptar contrasenas con BCrypt
-- Validar entrada con FluentValidation
+- Agregar validaciones adicionales
 - Usar HTTPS
 - Implementar rate limiting
 

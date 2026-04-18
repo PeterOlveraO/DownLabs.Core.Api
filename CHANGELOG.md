@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-04-18
+
+### Autenticación con Supabase Auth
+
+- **Sistema de Registro**: Endpoint `/api/auth/register` para crear usuarios en auth.users
+- **Sistema de Login**: Endpoint `/api/auth/login` que retorna access_token y rol
+- **Migración SQL**: Script para integrar auth.users con tablas públicas
+- **Trigger Automático**: `handle_new_user()` crea registro automático en tabla correspondiente
+- **FK Users**: Relación de clientes, mayoristas y operadores con auth.users
+
+### Archivos Nuevos
+
+- `01_migracion_auth.sql`: Script de migración para Supabase
+- `pruebas/api.http`: Archivo de pruebas completo
+- `Endpoints/AuthEndpoints.cs`: Endpoints de autenticación
+
+### API Mejorada
+
+- Auth: register, login
+- Clientes: CRUD completo
+- Mayoristas: CRUD completo
+- Operadores: CRUD completo
+- Productos: CRUD completo
+- Solicitudes: CRUD completo
+- Cotizaciones: CRUD completo
+- Pedidos: CRUD completo
+
+---
+
 ## [1.1.0] - 2026-04-18
 
 ### Nuevas Funcionalidades
