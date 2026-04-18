@@ -36,9 +36,10 @@ public static class MayoristaEndpoints
 
             if (!string.IsNullOrWhiteSpace(search))
             {
+                var searchLower = search.ToLowerInvariant();
                 mayoristas = mayoristas.Where(m => 
-                    (m.nombre_empresa?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (m.ubicacion?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)
+                    (m.nombre_empresa?.ToLowerInvariant().Contains(searchLower) ?? false) ||
+                    (m.ubicacion?.ToLowerInvariant().Contains(searchLower) ?? false)
                 ).ToList();
             }
 

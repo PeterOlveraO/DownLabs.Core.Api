@@ -1,0 +1,265 @@
+================================================================================
+                    DownLabs.Core.Api - Documentacion del Proyecto
+================================================================================
+
+DESCRIPCION GENERAL
+================================================================================
+
+DownLabs.Core.Api es una API RESTful desarrollada en .NET 9.0 que sirve como 
+backend para la plataforma DownLabs. Utiliza Supabase (PostgreSQL) como base de 
+datos y sigue el patron de Minimal APIs de ASP.NET Core.
+
+El proyecto permite gestionar:
+- Clientes (empresas que solicitan cotizaciones)
+- Mayoristas (proveedores de productos)
+- Operadores (personal de DownLabs que procesan solicitudes)
+- Catalogo de Productos
+- Solicitudes de Cotizacion
+- Cotizaciones generadas
+- Pedidos con Credito
+
+
+ARQUITECTURA DEL PROYECTO
+================================================================================
+
+El proyecto sigue una arquitectura limpia organizada en capas:
+
+/Models
+    Contiene las clases que mapean a las tablas de Supabase:
+    - Cliente.cs          -> tabla "clientes"
+    - Mayorista.cs        -> tabla "mayoristas"  
+    - Operador.cs         -> tabla "operadores"
+    - CatalogoProducto.cs  -> tabla "catalogo_productos"
+    - SolicitudCotizacion.cs -> tabla "solicitudes_cotizacion"
+    - CotizacionDownlabs.cs -> tabla "cotizaciones_downlabs"
+    - PedidoCredito.cs    -> tabla "pedidos_creditos"
+
+/Services
+    Logica de negocio reutilizable:
+    - ICrudService.cs     -> Interfaz generica para operaciones CRUD
+    - CrudService.cs      -> Implementacion que se conecta directamente 
+                            a Supabase usando la biblioteca oficial
+
+/Endpoints
+    Define los endpoints de la API para cada recurso:
+    - ClienteEndpoints.cs
+    - MayoristaEndpoints.cs
+    - OperadorEndpoints.cs
+    - CatalogoProductoEndpoints.cs
+    - SolicitudCotizacionEndpoints.cs
+    - CotizacionDownlabsEndpoints.cs
+    - PedidoCreditoEndpoints.cs
+
+Cada archivo de endpoints sigue el mismo patron de diseno.
+
+
+FLUJO DE DATOS
+================================================================================
+
+1. Cliente -> Solicita Cotizacion
+   Un cliente envia una solicitud de cotizacion con:
+   - ID del cliente
+   - Descripcion del articulo
+   - Nivel de urgencia (Normal/Urgente)
+
+2. Operador -> Procesa Solicitud
+   Un operador recibe la solicitud y puede:
+   - Cambiar el estado (Pendiente/Cotizada/Rechazada)
+   - Asignarse a la solicitud (id_operador)
+
+3. Sistema -> Genera Cotizacion
+   Se crea una cotizacion vinculada a:
+   - La solicitud original (id_solicitud)
+   - Un producto del catalogo (id_producto)
+   - Precio final para el cliente
+   - Costo de envio
+   - Estado (Negociando/Aceptada/Rechazada)
+
+4. Cliente -> Genera Pedido
+   Si la cotizacion es aceptada, se puede crear un pedido de credito:
+   - Vinculado a la cotizacion (id_cotizacion)
+   - Indica si requiere credito
+   - Monto total incluyendo financiamiento
+   - Estado de pago (Pendiente/Pagado/En mora)
+   - Fechas de inicio y vencimiento del credito
+   - Tipo de pago (contado/credito_30/credito_60/transferencia)
+
+
+PATRON DE DISENO DE ENDPOINTS
+================================================================================
+
+Cada recurso sigue el mismo patron REST:
+
+GET    /api/recurso           -> Listar todos (con paginacion)
+GET    /api/recurso/{id}     -> Obtener por ID
+POST   /api/recurso          -> Crear nuevo
+PUT    /api/recurso/{id}     -> Reemplazar completamente
+PATCH  /api/recurso/{id}     -> Actualizar parcialmente
+DELETE /api/recurso/{id}    -> Eliminar
+
+PARAMETROS DE CONSULTA:
+- page      -> Numero de pagina (default: 1)
+- pageSize  -> Items por pagina (default: 20, max: 100)
+- search    -> Buscar en campos de texto
+- filtros especificos por recurso
+
+
+SERVICIO CRUD GENERICO
+================================================================================
+
+El CrudService es un servicio singleton que maneja todas las operaciones
+de base de datos de manera generica:
+
+Metodos disponibles:
+- GetAllAsync<T>(tableName)        -> Obtiene todos los registros
+- GetByIdAsync<T>(tableName, idColumn, id) -> Obtiene uno por ID
+- CreateAsync<T>(tableName, data)  -> Inserta nuevo registro
+- UpdateAsync<T>(tableName, idColumn, id, data) -> Actualiza
+- DeleteAsync(tableName, idColumn, id) -> Elimina
+
+Este servicio:
+- Se conecta directamente a Supabase via HTTP
+- Serializa/deserializa JSON automaticamente
+- Maneja errores de base de datos
+- Soporta CancellationToken para operaciones async
+
+
+CONEXION A SUPABASE
+================================================================================
+
+La conexion se configura en appsettings.json:
+
+{
+  "Supabase": {
+    "Url": "https://gszxuzkibrdzmklhnykv.supabase.co",
+    "Key": "clave-api-supabase"
+  }
+}
+
+La biblioteca Supabase.NET se encarga de:
+- Autenticacion con la API key
+- Transformar consultas REST a SQL
+- Manejar tipos de datos PostgreSQL
+- Soporte para PostgreSQL features (JSON, arrays, etc.)
+
+
+PAGINACION
+================================================================================
+
+Todos los endpoints de lista retornan paginacion automatica:
+
+{
+  "success": true,
+  "data": [...],
+  "pagination": {
+    "page": 1,
+    "pageSize": 20,
+    "total": 100,
+    "totalPages": 5,
+    "hasNext": true,
+    "hasPrev": false
+  }
+}
+
+
+MANEJO DE ERRORES
+================================================================================
+
+Formato consistente de errores:
+
+{
+  "success": false,
+  "error": "NotFound",
+  "message": "Descripcion del error"
+}
+
+Tipos de error:
+- ValidationError (400) -> Datos invalidos en la peticion
+- NotFound (404)       -> Recurso no encontrado
+- BadRequest (400)     -> Error de logica de negocio
+- InternalError (500)   -> Error interno del servidor
+
+
+SEGURIDAD (NOTA IMPORTANTE)
+================================================================================
+
+Este proyecto es para fines educativos/demostracion:
+
+- Contrasenas almacenadas en texto plano en la base de datos
+- Sin autenticacion JWT
+- Sin validacion de entrada rigurosa
+- Sin encriptacion
+
+PARA PRODUCCION se recomienda:
+- Implementar autenticacion JWT
+- Encriptar contrasenas con BCrypt
+- Validar entrada con FluentValidation
+- Usar HTTPS
+- Implementar rate limiting
+
+
+CONFIGURACIONES ADICIONALES
+================================================================================
+
+CORS:
+- Configurado para permitir solicitudes desde http://localhost:4321
+- Permite cualquier header y metodo para origins validos
+
+Health Check:
+- Endpoint /api/health para verificar que la API esta funcionando
+- Retorna timestamp del servidor
+
+OpenAPI:
+- Documentacion automatica disponible en modo desarrollo
+- Endpoint: /swagger/index.html
+
+
+DATOS DE PRUEBA
+================================================================================
+
+La base de datos incluye datos de prueba:
+
+- 29 clientes
+- 17 mayoristas
+- 16 operadores
+- 44 productos (con variaciones de colores/tamaños)
+- 22 solicitudes de cotizacion
+- 21 cotizaciones
+- 21 pedidos de credito
+
+Cada entidad tiene datos relacionados mediante Foreign Keys:
+
+
+RELACIONES ENTRE TABLAS
+================================================================================
+
+clientes (1) ----< (N) solicitudes_cotizacion
+solicitudes_cotizacion (1) ----< (N) cotizaciones_downlabs
+cotizaciones_downlabs (1) ----< (N) pedidos_creditos
+operadores (1) ----< (N) solicitudes_cotizacion
+operadores (1) ----< (N) cotizaciones_downlabs
+mayoristas (1) ----< (N) catalogo_productos
+catalogo_productos (1) ----< (N) cotizaciones_downlabs
+
+
+EJECUCION DEL PROYECTO
+================================================================================
+
+1. Configurar appsettings.json con credenciales de Supabase
+2. Ejecutar: dotnet run
+3. La API estara disponible en: http://localhost:5145
+4. Endpoints de prueba en: pruebas/api.http (para VS Code REST Client)
+
+
+TECNOLOGIAS USADAS
+================================================================================
+
+- .NET 9.0
+- ASP.NET Core 9.0 (Minimal APIs)
+- Supabase 1.1.1 (libreria oficial .NET)
+- PostgreSQL (via Supabase)
+- C# 12
+
+================================================================================
+                              Fin del Documento
+================================================================================

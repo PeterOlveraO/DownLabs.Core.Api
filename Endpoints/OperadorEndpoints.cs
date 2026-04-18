@@ -7,7 +7,7 @@ namespace DownLabs.Core.Api.Endpoints;
 public static class OperadorEndpoints
 {
     private const string TableName = "operadores";
-    private const string IdColumn = "id";
+    private const string IdColumn = "id_operadores";
 
     public static void RegisterOperadorEndpoints(this WebApplication app)
     {
@@ -117,7 +117,7 @@ public static class OperadorEndpoints
                 return Results.BadRequest(new { success = false, error = "ValidationError", message = "El apellido es requerido" });
             }
 
-            operador.id = Guid.NewGuid();
+            operador.id_operadores = Guid.NewGuid();
             operador.activo = true;
             operador.created_at = DateTime.UtcNow;
             operador.updated_at = DateTime.UtcNow;
@@ -125,7 +125,7 @@ public static class OperadorEndpoints
             var created = await crudService.CreateAsync<Operador>(TableName, operador, cancellationToken)
                 .ConfigureAwait(false);
             
-            return Results.Created($"/api/operadores/{created.id}", new { success = true, data = created });
+            return Results.Created($"/api/operadores/{created.id_operadores}", new { success = true, data = created });
         }
         catch (InvalidOperationException ex)
         {
@@ -147,7 +147,7 @@ public static class OperadorEndpoints
             if (existing is null)
                 return Results.NotFound(new { success = false, error = "NotFound", message = "Operador no encontrado" });
 
-            operador.id = id;
+            operador.id_operadores = id;
             operador.created_at = existing.created_at;
             operador.updated_at = DateTime.UtcNow;
 
@@ -184,8 +184,6 @@ public static class OperadorEndpoints
                 existing.email = operadorUpdate.email;
             if (operadorUpdate.telefono is not null)
                 existing.telefono = operadorUpdate.telefono;
-            if (operadorUpdate.contrasena is not null)
-                existing.contrasena = operadorUpdate.contrasena;
             if (operadorUpdate.activo)
                 existing.activo = operadorUpdate.activo;
             

@@ -12,6 +12,4 @@ public class Cliente
     public string? telefono_contacto { get; set; }
     public string? rfc { get; set; }
     public string? codigo_postal_fiscal { get; set; }
-    public string? contrasena { get; set; }
-    public string? contrasena_hash { get; set; }
 }

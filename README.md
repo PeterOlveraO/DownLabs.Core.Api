@@ -181,3 +181,25 @@ dotnet list package --outdated
 - Supabase 1.1.1
 - PostgreSQL
 - C# 12
+
+## Ultimo Lanzamiento
+
+### Version 1.1.0 (2026-04-18)
+
+**Nuevas Funcionalidades:**
+
+- Datos de prueba completos en todas las tablas
+- 29 clientes, 17 mayoristas, 16 operadores, 44 productos, 22 solicitudes, 21 cotizaciones, 21 pedidos
+
+**Mejoras:**
+
+- Modelos C# actualizados para coincidir con esquema de Supabase
+- Endpoints con valores por defecto correctos segun constraints
+- Catalogo expandido con 30 productos adicionales con variaciones
+- Busqueda por descripcion en productos
+
+**Correcciones:**
+
+- Schema mismatch en Operador corregido
+- CHECK constraints manejados correctamente
+- Tipos de datos corregidos ( Guid, decimal no/nullable)
