@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-04-18
+
+### Nuevas Funcionalidades
+
+- **Datos de Prueba Completos**: Base de datos populada con datos de prueba realistas
+  - 29 clientes con contraseñas
+  - 17 mayoristas con contraseñas
+  - 16 operadores con contraseñas
+  - 44 productos del catálogo con variaciones
+  - 22 solicitudes de cotización
+  - 21 cotizaciones Downlabs
+  - 21 pedidos de crédito
+
+### Mejoras
+
+- **Modelos Actualizados**: Modelos C# actualizados para coincidir con esquema de Supabase
+  - Operador: columnas id, nombre, apellido, email, telefono, activo, contrasena_hash
+  - SolicitudCotizacion: nivel_urgencia (Normal/Urgente), estado_solicitud (Pendiente/Cotizada/Rechazada)
+  - CotizacionDownlabs: estado (Negociando/Aceptada/Rechazada)
+  - PedidoCredito: estado_pago (Pendiente/Pagado/En mora), tipo_pago, fechas de crédito
+
+- **Endpoints Mejorados**: 
+  - Valores por defecto correctos según constraints de base de datos
+  - Búsqueda por descripcion en productos
+  - Validaciones actualizadas para tipos no nullables
+
+- **Catálogo Expandido**: 30 productos adicionales con variaciones
+  - Diferentes colores y tamaños
+  - Múltiples mayoristas por producto
+  - Precios variables según especificaciones
+
+### Correcciones
+
+- Schema mismatch en Operador: corregido de id_operador, correo, rol → id, email, apellido, activo
+- CHECK constraints descubiertos y manejados correctamente
+- Tipos de datos corregidos ( Guid, decimal no/nullable)
+
+---
+
 ## [1.0.0] - 2026-04-17
 
 ### Nuevas Funcionalidades

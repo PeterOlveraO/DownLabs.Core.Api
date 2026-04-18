@@ -1,37 +1,24 @@
 # DownLabs.Core.Api
 
-<p align="center">
-  <img src="https://img.shields.io/badge/.NET-9.0-blue?style=flat-square&logo=.net" alt=".NET Version">
-  <img src="https://img.shields.io/badge/ASP.NET-Core-Web%20API-bd5e32?style=flat-square" alt="Framework">
-  <img src="https://img.shields.io/badge/Supabase-PostgreSQL-3fbf8c?style=flat-square&logo=supabase" alt="Database">
-  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License">
-</p>
+API RESTful para la plataforma DownLabs construida con .NET 9.0 y Supabase.
 
-RESTful API backend for DownLabs platform built with .NET 9.0 and Supabase.
+## Caracteristicas
 
-## Overview
+- **.NET 9.0** con ASP.NET Core Web API
+- **Supabase** como base de datos PostgreSQL
+- **Patron Minimal API** con endpoints organizados
+- **Paginacion** automatica en todos los endpoints de lista
+- **Filtrado** avanzado por diferentes campos
+- **Async/Await** moderno con CancellationToken
 
-DownLabs.Core.Api provides a complete REST API for managing clients, wholesalers, operators, product catalogs, quote requests, quotes, and credit orders. The API follows RESTful design principles with pagination, filtering, and consistent error handling.
-
-## Features
-
-- **CRUD Operations** - Full Create, Read, Update, Delete for all entities
-- **Pagination** - Automatic pagination for all list endpoints (default 20 items, max 100)
-- **Filtering** - Query parameters for filtering and searching
-- **Async/Await** - Modern async patterns with CancellationToken support
-- **Generic Service** - Reusable CRUD service for all tables
-- **CORS Ready** - Pre-configured for frontend integration
-
-## Quick Start
-
-### Prerequisites
+## Requisitos Previos
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- [Supabase](https://supabase.com) account and project
+- [Supabase](https://supabase.com) - cuenta y proyecto
 
-### Configuration
+## Configuracion
 
-Create `appsettings.json` in the project root:
+Crea `appsettings.json` en la raiz del proyecto:
 
 ```json
 {
@@ -40,54 +27,54 @@ Create `appsettings.json` in the project root:
   },
   "AllowedHosts": "*",
   "Supabase": {
-    "Url": "https://your-project.supabase.co",
-    "Key": "your-supabase-key"
+    "Url": "https://tu-proyecto.supabase.co",
+    "Key": "tu-clave-supabase"
   }
 }
 ```
 
 > [!IMPORTANT]
-> Never commit `appsettings.json` - it contains sensitive credentials.
+> Nunca hagas commit de `appsettings.json` - contiene credenciales sensibles.
 
-### Run the API
+## Ejecucion
 
 ```bash
 dotnet run
 ```
 
-The API will be available at `http://localhost:5145`
+La API estara disponible en `http://localhost:5145`
 
-## API Endpoints
+## Endpoints de API
 
-| Resource | Base URL | Description |
+| Recurso | URL Base | Descripcion |
 |----------|----------|-------------|
-| Clientes | `/api/clientes` | Registered clients |
-| Mayoristas | `/api/mayoristas` | Wholesaler companies |
-| Operadores | `/api/operadores` | System operators |
-| Productos | `/api/catalogo-productos` | Product catalog |
-| Solicitudes | `/api/solicitudes-cotizacion` | Quote requests |
-| Cotizaciones | `/api/cotizaciones` | Generated quotes |
-| Pedidos | `/api/pedidos-credito` | Credit orders |
+| Clientes | `/api/clientes` | Clientes registrados |
+| Mayoristas | `/api/mayoristas` | Empresas mayoristas |
+| Operadores | `/api/operadores` | Operadores del sistema |
+| Productos | `/api/catalogo-productos` | Catalogo de productos |
+| Solicitudes | `/api/solicitudes-cotizacion` | Solicitudes de cotizacion |
+| Cotizaciones | `/api/cotizaciones` | Cotizaciones generadas |
+| Pedidos | `/api/pedidos-credito` | Pedidos con credito |
 
-### Available Endpoints (per resource)
+### Metodos HTTP Disponibles
 
-| Method | Endpoint | Description |
+| Metodo | Endpoint | Descripcion |
 |--------|----------|-------------|
-| GET | `/api/{resource}` | List all (paginated) |
-| GET | `/api/{resource}/{id}` | Get by ID |
-| POST | `/api/{resource}` | Create new |
-| PUT | `/api/{resource}/{id}` | Replace |
-| PATCH | `/api/{resource}/{id}` | Partial update |
-| DELETE | `/api/{resource}/{id}` | Delete |
+| GET | `/api/recurso` | Listar todos (paginado) |
+| GET | `/api/recurso/{id}` | Obtener por ID |
+| POST | `/api/recurso` | Crear nuevo |
+| PUT | `/api/recurso/{id}` | Reemplazar |
+| PATCH | `/api/recurso/{id}` | Actualizar parcialmente |
+| DELETE | `/api/recurso/{id}` | Eliminar |
 
-### Query Parameters
+### Parametros de Consulta
 
-All GET endpoints support:
+Todos los endpoints GET soportan:
 
-- `page` - Page number (default: 1)
-- `pageSize` - Items per page (default: 20, max: 100)
+- `page` - Numero de pagina (default: 1)
+- `pageSize` - Items por pagina (default: 20, max: 100)
 
-### Example Response
+### Ejemplo de Respuesta
 
 ```json
 {
@@ -104,11 +91,11 @@ All GET endpoints support:
 }
 ```
 
-## Project Structure
+## Estructura del Proyecto
 
 ```
 DownLabs.Core.Api/
-├── Models/                      # Data models
+├── Models/                      # Modelos de datos
 │   ├── Cliente.cs
 │   ├── Mayorista.cs
 │   ├── Operador.cs
@@ -116,83 +103,81 @@ DownLabs.Core.Api/
 │   ├── SolicitudCotizacion.cs
 │   ├── CotizacionDownlabs.cs
 │   └── PedidoCredito.cs
-├── Services/                   # Business logic
+├── Services/                   # Logica de negocio
 │   ├── ICrudService.cs
 │   └── CrudService.cs
-├── Endpoints/                  # API endpoints
+├── Endpoints/                  # Endpoints de API
 │   ├── ClienteEndpoints.cs
 │   ├── MayoristaEndpoints.cs
 │   └── ...
-├── Program.cs                  # Entry point
-└── appsettings.json           # Configuration
+├── Program.cs                  # Punto de entrada
+└── appsettings.json           # Configuracion
 ```
 
-## Error Handling
+## Manejo de Errores
 
-All errors return consistent JSON format:
+Todos los errores retornan formato JSON consistente:
 
 ```json
 {
   "success": false,
   "error": "NotFound",
-  "message": "Resource not found"
+  "message": "Recurso no encontrado"
 }
 ```
 
-| Error Type | HTTP Code | Description |
+| Tipo de Error | Codigo HTTP | Descripcion |
 |------------|-----------|-------------|
-| ValidationError | 400 | Invalid request data |
-| NotFound | 404 | Resource doesn't exist |
-| BadRequest | 400 | Business logic error |
-| InternalError | 500 | Server error |
+| ValidationError | 400 | Datos de solicitud invalidos |
+| NotFound | 400 | El recurso no existe |
+| BadRequest | 400 | Error de logica de negocio |
+| InternalError | 500 | Error del servidor |
 
-## Development
+## Tablas de Base de Datos
 
-### Build
+| Tabla | Descripcion |
+|-------|-------------|
+| clientes | Empresas clientes |
+| mayoristas | Empresas mayoristas |
+| operadores | Operadores del sistema |
+| catalogo_productos | Catalogo de productos |
+| solicitudes_cotizacion | Solicitudes de cotizacion |
+| cotizaciones_downlabs | Cotizaciones generadas |
+| pedidos_creditos | Pedidos con credito |
+
+## Notas de Seguridad
+
+> [!WARNING]
+> Este proyecto es solo para fines educativos/demostracion.
+>
+> - Contrasenas almacenadas en texto plano
+> - Sin autenticacion JWT
+> - Sin validacion de entrada
+>
+> Para produccion: agregar BCrypt, JWT, validacion de entrada y HTTPS.
+
+## Construir
 
 ```bash
 dotnet build
 ```
 
-### Clean and Rebuild
+## Limpiar y Reconstruir
 
 ```bash
 dotnet clean && dotnet build
 ```
 
-### Check for outdated packages
+## Paquetes Obsoletos
 
 ```bash
 dotnet list package --outdated
 ```
 
-## Database Tables
+## Tecnologia
 
-| Table | Description |
-|-------|-------------|
-| clientes | Client companies |
-| mayoristas | Wholesaler companies |
-| operadores | System operators |
-| catalogo_productos | Product catalog |
-| solicitudes_cotizacion | Quote requests |
-| cotizaciones_downlabs | Generated quotes |
-| pedidos_creditos | Credit orders |
-
-## Security Notes
-
-> [!WARNING]
-> This project is for educational/demonstration purposes.
->
-> - Passwords stored in plain text
-> - No JWT authentication
-> - No input validation
->
-> For production: add BCrypt, JWT, input validation, and HTTPS.
-
-## Related Projects
-
-- [Frontend Astro](https://github.com/your-org/astro-webMinoristas) - Frontend client
-
-## License
-
-MIT License - See LICENSE file for details.
+- .NET 9.0
+- ASP.NET Core 9.0
+- Supabase 1.1.1
+- PostgreSQL
+- C# 12
