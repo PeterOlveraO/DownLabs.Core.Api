@@ -1,303 +1,198 @@
 # DownLabs.Core.Api
 
-API REST para gestión de clientes con Supabase.
+<p align="center">
+  <img src="https://img.shields.io/badge/.NET-9.0-blue?style=flat-square&logo=.net" alt=".NET Version">
+  <img src="https://img.shields.io/badge/ASP.NET-Core-Web%20API-bd5e32?style=flat-square" alt="Framework">
+  <img src="https://img.shields.io/badge/Supabase-PostgreSQL-3fbf8c?style=flat-square&logo=supabase" alt="Database">
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License">
+</p>
 
-## Estructura del Proyecto
+RESTful API backend for DownLabs platform built with .NET 9.0 and Supabase.
 
-```
-DownLabs.Core.Api/
-├── Controllers/           # Controladores de la API (futuro)
-├── Models/                # Modelos de datos
-│   └── Cliente.cs         # Modelo de cliente
-├── Services/              # Servicios de negocio
-│   ├── ISupabaseService.cs
-│   └── SupabaseService.cs
-├── Program.cs             # Punto de entrada y endpoints
-├── appsettings.json       # Configuración local (NO subir a Git)
-├── appsettings.json.example # Plantilla de configuración
-├── .gitignore             # Archivos ignorados por Git
-└── DownLabs.Core.Api.csproj
-```
+## Overview
 
-## Configuración
+DownLabs.Core.Api provides a complete REST API for managing clients, wholesalers, operators, product catalogs, quote requests, quotes, and credit orders. The API follows RESTful design principles with pagination, filtering, and consistent error handling.
 
-### 1. Configurar credenciales de Supabase
+## Features
 
-Después de clonar el repositorio, copia el archivo de configuración de ejemplo:
+- **CRUD Operations** - Full Create, Read, Update, Delete for all entities
+- **Pagination** - Automatic pagination for all list endpoints (default 20 items, max 100)
+- **Filtering** - Query parameters for filtering and searching
+- **Async/Await** - Modern async patterns with CancellationToken support
+- **Generic Service** - Reusable CRUD service for all tables
+- **CORS Ready** - Pre-configured for frontend integration
 
-```bash
-cp appsettings.json.example appsettings.json
-```
+## Quick Start
 
-Luego edita `appsettings.json` con tus credenciales de Supabase:
+### Prerequisites
+
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [Supabase](https://supabase.com) account and project
+
+### Configuration
+
+Create `appsettings.json` in the project root:
 
 ```json
 {
+  "Logging": {
+    "LogLevel": { "Default": "Information" }
+  },
+  "AllowedHosts": "*",
   "Supabase": {
-    "Url": "https://tu-proyecto.supabase.co",
-    "Key": "tu-anon-key"
+    "Url": "https://your-project.supabase.co",
+    "Key": "your-supabase-key"
   }
 }
 ```
 
-### 2. Credenciales de Supabase
+> [!IMPORTANT]
+> Never commit `appsettings.json` - it contains sensitive credentials.
 
-1. Ir a [Supabase Dashboard](https://supabase.com/dashboard)
-2. Seleccionar proyecto
-3. Settings > API
-4. Copiar **Project URL** y **anon public key**
+### Run the API
 
-## Comandos
-
-### Iniciar la aplicación
 ```bash
 dotnet run
 ```
-La app estará disponible en: `http://localhost:5145`
 
-### Detener la aplicación
-Presionar `Ctrl + C` en la terminal donde está corriendo.
+The API will be available at `http://localhost:5145`
 
-### Compilar
+## API Endpoints
+
+| Resource | Base URL | Description |
+|----------|----------|-------------|
+| Clientes | `/api/clientes` | Registered clients |
+| Mayoristas | `/api/mayoristas` | Wholesaler companies |
+| Operadores | `/api/operadores` | System operators |
+| Productos | `/api/catalogo-productos` | Product catalog |
+| Solicitudes | `/api/solicitudes-cotizacion` | Quote requests |
+| Cotizaciones | `/api/cotizaciones` | Generated quotes |
+| Pedidos | `/api/pedidos-credito` | Credit orders |
+
+### Available Endpoints (per resource)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/{resource}` | List all (paginated) |
+| GET | `/api/{resource}/{id}` | Get by ID |
+| POST | `/api/{resource}` | Create new |
+| PUT | `/api/{resource}/{id}` | Replace |
+| PATCH | `/api/{resource}/{id}` | Partial update |
+| DELETE | `/api/{resource}/{id}` | Delete |
+
+### Query Parameters
+
+All GET endpoints support:
+
+- `page` - Page number (default: 1)
+- `pageSize` - Items per page (default: 20, max: 100)
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "data": [...],
+  "pagination": {
+    "page": 1,
+    "pageSize": 20,
+    "total": 100,
+    "totalPages": 5,
+    "hasNext": true,
+    "hasPrev": false
+  }
+}
+```
+
+## Project Structure
+
+```
+DownLabs.Core.Api/
+├── Models/                      # Data models
+│   ├── Cliente.cs
+│   ├── Mayorista.cs
+│   ├── Operador.cs
+│   ├── CatalogoProducto.cs
+│   ├── SolicitudCotizacion.cs
+│   ├── CotizacionDownlabs.cs
+│   └── PedidoCredito.cs
+├── Services/                   # Business logic
+│   ├── ICrudService.cs
+│   └── CrudService.cs
+├── Endpoints/                  # API endpoints
+│   ├── ClienteEndpoints.cs
+│   ├── MayoristaEndpoints.cs
+│   └── ...
+├── Program.cs                  # Entry point
+└── appsettings.json           # Configuration
+```
+
+## Error Handling
+
+All errors return consistent JSON format:
+
+```json
+{
+  "success": false,
+  "error": "NotFound",
+  "message": "Resource not found"
+}
+```
+
+| Error Type | HTTP Code | Description |
+|------------|-----------|-------------|
+| ValidationError | 400 | Invalid request data |
+| NotFound | 404 | Resource doesn't exist |
+| BadRequest | 400 | Business logic error |
+| InternalError | 500 | Server error |
+
+## Development
+
+### Build
+
 ```bash
 dotnet build
 ```
 
----
+### Clean and Rebuild
 
-## Configuración CORS
-
-El backend está configurado para permitir peticiones desde el frontend Astro.
-
-**Origen permitido:** `http://localhost:4321`
-
-Esta configuración está en `Program.cs`:
-```csharp
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAstro", policy =>
-    {
-        policy.WithOrigins("http://localhost:4321")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
+```bash
+dotnet clean && dotnet build
 ```
 
----
+### Check for outdated packages
 
-## Endpoints
-
-### 1. Verificar conexión a Supabase
-
-**GET** `/api/supabase/test`
-
-Verifica que la conexión a Supabase funcione correctamente.
-
-**Respuesta exitosa:**
-```json
-{
-  "success": true,
-  "message": "✅ Conexión exitosa a Supabase. Status: OK (OK)"
-}
+```bash
+dotnet list package --outdated
 ```
 
----
+## Database Tables
 
-### 2. Registrar cliente
+| Table | Description |
+|-------|-------------|
+| clientes | Client companies |
+| mayoristas | Wholesaler companies |
+| operadores | System operators |
+| catalogo_productos | Product catalog |
+| solicitudes_cotizacion | Quote requests |
+| cotizaciones_downlabs | Generated quotes |
+| pedidos_creditos | Credit orders |
 
-**POST** `/api/clientes/register`
+## Security Notes
 
-Registra un nuevo cliente en la base de datos.
-
-**Body (JSON):**
-```json
-{
-  "nombre_empresa": "Mi Empresa",
-  "correo_contacto": "correo@ejemplo.com",
-  "contrasena": "password123"
-}
-```
-
-**Respuesta exitosa:**
-```json
-{
-  "success": true,
-  "message": "Cliente registrado exitosamente"
-}
-```
-
----
-
-### 3. Login de cliente
-
-**GET** `/api/clientes/login`
-
-Busca un cliente por correo y contraseña.
-
-**URL (con query parameters):**
-```
-GET /api/clientes/login?correo_contacto=correo@ejemplo.com&contrasena=password123
-```
-
-**Respuesta exitosa:**
-```json
-{
-  "success": true,
-  "cliente": {
-    "id_cliente": "uuid-del-cliente",
-    "nombre_empresa": "Mi Empresa"
-  }
-}
-```
-
-**Respuesta fallida:**
-```json
-{
-  "success": false,
-  "message": "Credenciales invalidas"
-}
-```
-
----
-
-## Pruebas con ThunderClient
-
-### Registro (POST)
-```
-Method: POST
-URL: http://localhost:5145/api/clientes/register
-Headers:
-  Content-Type: application/json
-Body:
-{
-  "nombre_empresa": "Empresa Test",
-  "correo_contacto": "test@test.com",
-  "contrasena": "password123"
-}
-```
-
-### Login (GET)
-```
-Method: GET
-URL: http://localhost:5145/api/clientes/login?correo_contacto=test@test.com&contrasena=password123
-```
-
----
-
-## Tabla en Supabase
-
-### Tabla: `clientes`
-
-| Columna | Tipo | Descripción |
-|---------|------|-------------|
-| id_cliente | uuid | ID único del cliente (PK) |
-| nombre_empresa | text | Nombre de la empresa |
-| historial_compras | jsonb | Historial de compras |
-| calificacion_crediticia | numeric | Calificación crediticia |
-| created_at | timestamp | Fecha de creación |
-| updated_at | timestamp | Fecha de actualización |
-| correo_contacto | text | Correo de contacto |
-| telefono_contacto | text | Teléfono de contacto |
-| rfc | varchar | RFC fiscal |
-| codigo_postal_fiscal | varchar | Código postal fiscal |
-| contrasena | text | Contraseña (texto plano) |
-
----
-
-## Notas de Seguridad
-
-> ⚠️ **Advertencia**: Este proyecto es para propósitos educativos/prueba.
-> 
-> - Las contraseñas se guardan en **texto plano**
-> - No hay autenticación con tokens/JWT
-> - No hay validaciones robustas
+> [!WARNING]
+> This project is for educational/demonstration purposes.
 >
-> Para producción, implementar:
-> - Hash de contraseñas (BCrypt)
-> - Autenticación JWT
-> - Validación de datos
-> - HTTPS obligatorio
+> - Passwords stored in plain text
+> - No JWT authentication
+> - No input validation
+>
+> For production: add BCrypt, JWT, input validation, and HTTPS.
 
----
+## Related Projects
 
-## Requisitos
+- [Frontend Astro](https://github.com/your-org/astro-webMinoristas) - Frontend client
 
-- .NET 9.0 SDK
-- Supabase (cuenta y proyecto)
+## License
 
----
-
-## Conexión con Frontend
-
-Este backend está diseñado para trabajar con el frontend Astro.
-
-### Endpoints disponibles para el frontend:
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| POST | `/api/clientes/register` | Registrar nuevo cliente |
-| GET | `/api/clientes/login` | Iniciar sesión (query params) |
-| GET | `/api/supabase/test` | Verificar conexión |
-
-### Cómo correr ambos proyectos:
-
-**Terminal 1 - Backend:**
-```bash
-cd DownLabs.Core.Api
-dotnet run
-# Disponible en http://localhost:5145
-```
-
-**Terminal 2 - Frontend:**
-```bash
-cd astro-webMinoristas
-pnpm dev
-# Disponible en http://localhost:4321
-```
-
-### Puerto del Backend
-
-Si el puerto 5145 está en uso, puedes cambiarlo:
-```bash
-dotnet run --urls="http://localhost:5000"
-```
-
-No olvides actualizar la URL en el frontend (`src/components/sections/Header.astro`) si cambias el puerto.
-
----
-
-## Proyecto Relacionado
-
-- **Frontend Astro:** `../astro-webMinoristas`
-
----
-
-## Notas sobre Git
-
-### Archivos ignorados
-
-El archivo `.gitignore` está configurado para ignorar:
-- `appsettings.json` (contiene credenciales)
-- `bin/` y `obj/` (build artifacts)
-- `.vs/` y `.vscode/` (configuración IDE)
-- `*.log` (archivos de log)
-
-### Después de clonar
-
-```bash
-# 1. Clonar el repositorio
-git clone https://github.com/tu-usuario/tu-repo.git
-cd DownLabs.Core.Api
-
-# 2. Copiar configuración de ejemplo
-cp appsettings.json.example appsettings.json
-
-# 3. Agregar tus credenciales
-# Editar appsettings.json con tu URL y key de Supabase
-
-# 4. Restaurar dependencias y correr
-dotnet restore
-dotnet run
-```
-
+MIT License - See LICENSE file for details.
