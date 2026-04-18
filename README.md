@@ -223,7 +223,7 @@ URL: http://localhost:5145/api/clientes/login?correo_contacto=test@test.com&cont
 
 ## Requisitos
 
-- .NET 10.0 SDK
+- .NET 9.0 SDK
 - Supabase (cuenta y proyecto)
 
 ---

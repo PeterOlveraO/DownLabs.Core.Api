@@ -1,15 +1,41 @@
 # Build results
 bin/
 obj/
+out/
+publish/
 
 # IDE
 .vs/
 .vscode/
+.idea/
+*.user
+*.suo
 
 # Logs
 *.log
+logs/
 app.log
 
 # User settings (contiene credenciales sensibles)
-*.user
 appsettings.json
+appsettings.*.json
+
+# .NET
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# NuGet
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+tmp/
+temp/
+*.tmp

@@ -1,0 +1,21 @@
+@host = http://localhost:5145
+
+### Test de conexion a Supabase
+GET {{host}}/api/supabase/test
+
+---
+
+### Registrar nuevo cliente
+POST {{host}}/api/clientes/register
+Content-Type: application/json
+
+{
+  "nombre_empresa": "Empresa Test",
+  "correo_contacto": "test@test.com",
+  "contrasena": "password123"
+}
+
+---
+
+### Login de cliente
+GET {{host}}/api/clientes/login?correo_contacto=test@test.com&contrasena=password123
