@@ -124,12 +124,12 @@ public static class SolicitudCotizacionEndpoints
 
             if (string.IsNullOrWhiteSpace(solicitud.nivel_urgencia))
             {
-                solicitud.nivel_urgencia = "normal";
+                solicitud.nivel_urgencia = "Normal";
             }
 
             if (string.IsNullOrWhiteSpace(solicitud.estado_solicitud))
             {
-                solicitud.estado_solicitud = "pendiente";
+                solicitud.estado_solicitud = "Pendiente";
             }
 
             solicitud.id_solicitud = Guid.NewGuid();

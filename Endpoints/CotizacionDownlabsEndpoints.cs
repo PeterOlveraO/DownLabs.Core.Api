@@ -109,19 +109,19 @@ public static class CotizacionDownlabsEndpoints
                 return Results.BadRequest(new { success = false, error = "ValidationError", message = "El ID de solicitud es requerido" });
             }
 
-            if (!cotizacion.id_producto.HasValue)
+            if (cotizacion.id_producto == Guid.Empty)
             {
                 return Results.BadRequest(new { success = false, error = "ValidationError", message = "El ID de producto es requerido" });
             }
 
-            if (!cotizacion.precio_final_cliente.HasValue)
+            if (cotizacion.precio_final_cliente <= 0)
             {
                 return Results.BadRequest(new { success = false, error = "ValidationError", message = "El precio final es requerido" });
             }
 
             if (string.IsNullOrWhiteSpace(cotizacion.estado))
             {
-                cotizacion.estado = "pendiente";
+                cotizacion.estado = "Negociando";
             }
 
             cotizacion.id_cotizacion = Guid.NewGuid();
@@ -182,11 +182,11 @@ public static class CotizacionDownlabsEndpoints
             if (existing is null)
                 return Results.NotFound(new { success = false, error = "NotFound", message = "Cotizacion no encontrada" });
 
-            if (cotizacionUpdate.precio_final_cliente is not null)
+            if (cotizacionUpdate.precio_final_cliente > 0)
                 existing.precio_final_cliente = cotizacionUpdate.precio_final_cliente;
-            if (cotizacionUpdate.costo_envio is not null)
+            if (cotizacionUpdate.costo_envio > 0)
                 existing.costo_envio = cotizacionUpdate.costo_envio;
-            if (cotizacionUpdate.estado is not null)
+            if (!string.IsNullOrWhiteSpace(cotizacionUpdate.estado))
                 existing.estado = cotizacionUpdate.estado;
             
             existing.updated_at = DateTime.UtcNow;

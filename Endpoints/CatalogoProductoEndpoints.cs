@@ -41,7 +41,7 @@ public static class CatalogoProductoEndpoints
                 productos = productos.Where(p => 
                     (p.nombre_articulo?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
                     (p.categoria?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (p.materiales?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)
+                    (p.descripcion?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)
                 ).ToList();
             }
 
@@ -113,7 +113,7 @@ public static class CatalogoProductoEndpoints
                 return Results.BadRequest(new { success = false, error = "ValidationError", message = "El nombre del articulo es requerido" });
             }
 
-            if (!producto.id_mayorista.HasValue)
+            if (producto.id_mayorista == Guid.Empty)
             {
                 return Results.BadRequest(new { success = false, error = "ValidationError", message = "El ID del mayorista es requerido" });
             }
@@ -176,17 +176,17 @@ public static class CatalogoProductoEndpoints
             if (existing is null)
                 return Results.NotFound(new { success = false, error = "NotFound", message = "Producto no encontrado" });
 
-            if (productoUpdate.nombre_articulo is not null)
+            if (!string.IsNullOrWhiteSpace(productoUpdate.nombre_articulo))
                 existing.nombre_articulo = productoUpdate.nombre_articulo;
             if (productoUpdate.categoria is not null)
                 existing.categoria = productoUpdate.categoria;
-            if (productoUpdate.precio_mayorista is not null)
+            if (productoUpdate.precio_mayorista > 0)
                 existing.precio_mayorista = productoUpdate.precio_mayorista;
-            if (productoUpdate.precio_dwlabs is not null)
+            if (productoUpdate.precio_dwlabs > 0)
                 existing.precio_dwlabs = productoUpdate.precio_dwlabs;
-            if (productoUpdate.materiales is not null)
-                existing.materiales = productoUpdate.materiales;
-            if (productoUpdate.moq is not null)
+            if (productoUpdate.descripcion is not null)
+                existing.descripcion = productoUpdate.descripcion;
+            if (productoUpdate.moq > 0)
                 existing.moq = productoUpdate.moq;
             
             existing.updated_at = DateTime.UtcNow;

@@ -111,7 +111,7 @@ public static class PedidoCreditoEndpoints
 
             if (string.IsNullOrWhiteSpace(pedido.estado_pago))
             {
-                pedido.estado_pago = "pendiente";
+                pedido.estado_pago = "Pendiente";
             }
 
             pedido.id_pedido = Guid.NewGuid();
@@ -174,9 +174,9 @@ public static class PedidoCreditoEndpoints
 
             if (pedidoUpdate.requiere_credito != default)
                 existing.requiere_credito = pedidoUpdate.requiere_credito;
-            if (pedidoUpdate.cargo_financiamiento is not null)
+            if (pedidoUpdate.cargo_financiamiento > 0)
                 existing.cargo_financiamiento = pedidoUpdate.cargo_financiamiento;
-            if (pedidoUpdate.monto_total_deuda is not null)
+            if (pedidoUpdate.monto_total_deuda > 0)
                 existing.monto_total_deuda = pedidoUpdate.monto_total_deuda;
             if (pedidoUpdate.estado_pago is not null)
                 existing.estado_pago = pedidoUpdate.estado_pago;
