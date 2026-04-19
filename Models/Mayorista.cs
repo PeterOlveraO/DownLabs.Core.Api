@@ -10,4 +10,6 @@ public class Mayorista
     public DateTime? updated_at { get; set; }
     public string? correo_contacto { get; set; }
     public string? telefono_contacto { get; set; }
+    public string? rfc { get; set; }
+    public string? nombre_operador { get; set; }
 }

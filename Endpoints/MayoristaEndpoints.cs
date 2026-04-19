@@ -167,6 +167,10 @@ public static class MayoristaEndpoints
                 existing.correo_contacto = mayoristaUpdate.correo_contacto;
             if (mayoristaUpdate.telefono_contacto is not null)
                 existing.telefono_contacto = mayoristaUpdate.telefono_contacto;
+            if (mayoristaUpdate.rfc is not null)
+                existing.rfc = mayoristaUpdate.rfc;
+            if (mayoristaUpdate.nombre_operador is not null)
+                existing.nombre_operador = mayoristaUpdate.nombre_operador;
             if (mayoristaUpdate.nivel_confianza > 0)
                 existing.nivel_confianza = mayoristaUpdate.nivel_confianza;
             

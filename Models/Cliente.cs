@@ -11,5 +11,5 @@ public class Cliente
     public string? correo_contacto { get; set; }
     public string? telefono_contacto { get; set; }
     public string? rfc { get; set; }
-    public string? codigo_postal_fiscal { get; set; }
+    public string? direccion_fiscal { get; set; }
 }

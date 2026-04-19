@@ -166,8 +166,8 @@ public static class ClienteEndpoints
                 existing.telefono_contacto = clienteUpdate.telefono_contacto;
             if (clienteUpdate.rfc is not null)
                 existing.rfc = clienteUpdate.rfc;
-            if (clienteUpdate.codigo_postal_fiscal is not null)
-                existing.codigo_postal_fiscal = clienteUpdate.codigo_postal_fiscal;
+            if (clienteUpdate.direccion_fiscal is not null)
+                existing.direccion_fiscal = clienteUpdate.direccion_fiscal;
             
             existing.updated_at = DateTime.UtcNow;
 

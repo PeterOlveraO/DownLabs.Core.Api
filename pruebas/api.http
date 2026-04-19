@@ -47,12 +47,14 @@ GET {{host}}/api/clientes/9d0d95ab-8dfa-402b-9e3d-5f1af713a0c7
 
 ### POST /api/clientes - Crear cliente
 ### REQUIRED: nombre_empresa
+### Campos adicionales: direccion_fiscal (era codigo_postal_fiscal)
 POST {{host}}/api/clientes
 Content-Type: application/json
 
 {
   "nombre_empresa": "Nueva Empresa",
-  "correo_contacto": "email@empresa.com"
+  "correo_contacto": "email@empresa.com",
+  "direccion_fiscal": "Calle Principal 123, Ciudad, Mexico"
 }
 
 ### PATCH /api/clientes/{id} - Actualizar parcialmente
@@ -60,7 +62,9 @@ PATCH {{host}}/api/clientes/9d0d95ab-8dfa-402b-9e3d-5f1af713a0c7
 Content-Type: application/json
 
 {
-  "telefono_contacto": "5551234567"
+  "telefono_contacto": "5551234567",
+  "direccion_fiscal": "Nueva Direccion 456"
+}
 }
 
 # ==============================================================================
@@ -75,11 +79,14 @@ GET {{host}}/api/mayoristas/e6c956e3-d4ff-4da6-add4-09c9eae3e3e3
 
 ### POST /api/mayoristas - Crear mayorista
 ### REQUIRED: nombre_empresa
+### Campos adicionales: rfc, nombre_operador
 POST {{host}}/api/mayoristas
 Content-Type: application/json
 
 {
-  "nombre_empresa": "Nueva Distribuidora"
+  "nombre_empresa": "Nueva Distribuidora",
+  "rfc": "XAXX010101AB",
+  "nombre_operador": "Juan Perez"
 }
 
 ### PATCH /api/mayoristas/{id} - Actualizar parcialmente
@@ -87,7 +94,9 @@ PATCH {{host}}/api/mayoristas/e6c956e3-d4ff-4da6-add4-09c9eae3e3e3
 Content-Type: application/json
 
 {
-  "nivel_confianza": 8
+  "nivel_confianza": 8,
+  "rfc": "XBXX020202CD",
+  "nombre_operador": "Maria Garcia"
 }
 
 # ==============================================================================
