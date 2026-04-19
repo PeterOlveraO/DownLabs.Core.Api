@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using DownLabs.Core.Api.Services;
 
 namespace DownLabs.Core.Api.Endpoints;
 
@@ -156,6 +157,7 @@ public static class AuthEndpoints
     private static async Task<IResult> LoginAsync(
         [FromBody] LoginRequest request,
         [FromServices] IConfiguration configuration,
+        [FromServices] ICrudService crudService,
         CancellationToken cancellationToken = default)
     {
         try
@@ -210,7 +212,7 @@ public static class AuthEndpoints
                 { 
                     success = false, 
                     error = "Unauthorized", 
-                    message = $"Email o contraseña incorrectos. Status: {response.StatusCode}, Body: {responseJson}" 
+                    message = $"Email o contraseña incorrectos." 
                 });
             }
 
@@ -226,6 +228,15 @@ public static class AuthEndpoints
                 ? rolProp.GetString() ?? "cliente" 
                 : "cliente";
 
+            // Obtener perfil según el rol
+            object? perfil = rol.ToLowerInvariant() switch
+            {
+                "cliente" => await crudService.GetByIdAsync<Models.Cliente>("clientes", "id_cliente", Guid.Parse(userId), cancellationToken).ConfigureAwait(false),
+                "mayorista" => await crudService.GetByIdAsync<Models.Mayorista>("mayoristas", "id_mayorista", Guid.Parse(userId), cancellationToken).ConfigureAwait(false),
+                "operador" => await crudService.GetByIdAsync<Models.Operador>("operadores", "id_operadores", Guid.Parse(userId), cancellationToken).ConfigureAwait(false),
+                _ => null
+            };
+
             return Results.Ok(new 
             { 
                 success = true, 
@@ -235,7 +246,8 @@ public static class AuthEndpoints
                     token_type = "Bearer",
                     user_id = userId,
                     email = userEmail,
-                    rol = rol
+                    rol = rol,
+                    perfil = perfil
                 }
             });
         }
