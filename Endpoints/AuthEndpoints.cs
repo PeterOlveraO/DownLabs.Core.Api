@@ -1,13 +1,19 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace DownLabs.Core.Api.Endpoints;
 
 public static class AuthEndpoints
 {
-    private const string AuthUrl = "https://gszxuzkibrdzmklhnykv.supabase.co/auth/v1";
-    private const string SupabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzenh1emtpYnJkem1rbGhueWt2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjY0MDk1OCwiZXhwIjoyMDg4MjE2OTU4fQ.QVkwP8Bgqaho21j_1qY29bguna78qqnqadFVZmLqgZY";
+    private const string AuthApiPath = "/auth/v1";
+
+    private static string GetAuthUrl(IConfiguration config)
+        => $"{config["Supabase:Url"]}{AuthApiPath}";
+
+    private static string GetSupabaseKey(IConfiguration config)
+        => config["Supabase:Key"] ?? throw new InvalidOperationException("Supabase:Key no configurado");
 
     public static void RegisterAuthEndpoints(this WebApplication app)
     {
@@ -18,6 +24,7 @@ public static class AuthEndpoints
 
     private static async Task<IResult> RegisterAsync(
         [FromBody] RegisterRequest request,
+        [FromServices] IConfiguration configuration,
         CancellationToken cancellationToken = default)
     {
         try
@@ -91,10 +98,12 @@ public static class AuthEndpoints
                 user_metadata = metadata
             };
 
+            var supabaseKey = GetSupabaseKey(configuration);
+            
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Clear();
-            httpClient.DefaultRequestHeaders.Add("apikey", SupabaseKey);
-            httpClient.DefaultRequestHeaders.Authorization = System.Net.Http.Headers.AuthenticationHeaderValue.Parse($"Bearer {SupabaseKey}");
+            httpClient.DefaultRequestHeaders.Add("apikey", supabaseKey);
+            httpClient.DefaultRequestHeaders.Authorization = System.Net.Http.Headers.AuthenticationHeaderValue.Parse($"Bearer {supabaseKey}");
             
             var content = new StringContent(
                 JsonSerializer.Serialize(signupPayload),
@@ -102,7 +111,7 @@ public static class AuthEndpoints
                 "application/json"
             );
 
-            var response = await httpClient.PostAsync($"{AuthUrl}/admin/users", content, cancellationToken)
+            var response = await httpClient.PostAsync($"{GetAuthUrl(configuration)}/admin/users", content, cancellationToken)
                 .ConfigureAwait(false);
 
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken)
@@ -146,6 +155,7 @@ public static class AuthEndpoints
 
     private static async Task<IResult> LoginAsync(
         [FromBody] LoginRequest request,
+        [FromServices] IConfiguration configuration,
         CancellationToken cancellationToken = default)
     {
         try
@@ -170,6 +180,8 @@ public static class AuthEndpoints
                 });
             }
 
+            var supabaseKey = GetSupabaseKey(configuration);
+
             var loginPayload = new
             {
                 email = request.Email,
@@ -178,7 +190,7 @@ public static class AuthEndpoints
 
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Clear();
-            httpClient.DefaultRequestHeaders.Add("apikey", SupabaseKey);
+            httpClient.DefaultRequestHeaders.Add("apikey", supabaseKey);
             
             var content = new StringContent(
                 JsonSerializer.Serialize(loginPayload),
@@ -186,7 +198,7 @@ public static class AuthEndpoints
                 "application/json"
             );
 
-            var response = await httpClient.PostAsync($"{AuthUrl}/token?grant_type=password", content, cancellationToken)
+            var response = await httpClient.PostAsync($"{GetAuthUrl(configuration)}/token?grant_type=password", content, cancellationToken)
                 .ConfigureAwait(false);
 
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken)
