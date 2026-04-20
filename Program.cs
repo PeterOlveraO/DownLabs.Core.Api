@@ -33,6 +33,7 @@ app.RegisterCatalogoProductoEndpoints();
 app.RegisterSolicitudCotizacionEndpoints();
 app.RegisterCotizacionDownlabsEndpoints();
 app.RegisterPedidoCreditoEndpoints();
+app.RegisterPedidoRawEndpoints();
 app.RegisterAuthEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "OK", timestamp = DateTime.UtcNow }));
