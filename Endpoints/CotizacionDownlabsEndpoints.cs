@@ -26,6 +26,7 @@ public static class CotizacionDownlabsEndpoints
         [FromQuery] string? estado = null,
         [FromQuery] Guid? id_solicitud = null,
         [FromQuery] Guid? id_producto = null,
+        [FromQuery] string? ids_productos = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -49,6 +50,21 @@ public static class CotizacionDownlabsEndpoints
             if (id_producto.HasValue)
             {
                 cotizaciones = cotizaciones.Where(c => c.id_producto == id_producto).ToList();
+            }
+
+            // Filtrar por lista de productos (ids_productos=guid1,guid2,guid3)
+            if (!string.IsNullOrWhiteSpace(ids_productos))
+            {
+                var productIds = ids_productos
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => Guid.TryParse(s.Trim(), out var g) ? g : Guid.Empty)
+                    .Where(g => g != Guid.Empty)
+                    .ToHashSet();
+
+                if (productIds.Any())
+                {
+                    cotizaciones = cotizaciones.Where(c => c.id_producto.HasValue && productIds.Contains(c.id_producto.Value)).ToList();
+                }
             }
 
             var total = cotizaciones.Count;
