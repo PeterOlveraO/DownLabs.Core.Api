@@ -106,7 +106,6 @@ public static class CatalogoProductoEndpoints
             if (fieldList.Contains("precio_mayorista")) dict["precio_mayorista"] = p.precio_mayorista;
             if (fieldList.Contains("descripcion")) dict["descripcion"] = p.descripcion;
             if (fieldList.Contains("moq")) dict["moq"] = p.moq;
-            if (fieldList.Contains("precio_dwlabs")) dict["precio_dwlabs"] = p.precio_dwlabs;
             if (fieldList.Contains("created_at")) dict["created_at"] = p.created_at;
             if (fieldList.Contains("updated_at")) dict["updated_at"] = p.updated_at;
             result.Add(dict);
@@ -217,8 +216,6 @@ public static class CatalogoProductoEndpoints
                 existing.categoria = productoUpdate.categoria;
             if (productoUpdate.precio_mayorista > 0)
                 existing.precio_mayorista = productoUpdate.precio_mayorista;
-            if (productoUpdate.precio_dwlabs > 0)
-                existing.precio_dwlabs = productoUpdate.precio_dwlabs;
             if (productoUpdate.descripcion is not null)
                 existing.descripcion = productoUpdate.descripcion;
             if (productoUpdate.moq > 0)

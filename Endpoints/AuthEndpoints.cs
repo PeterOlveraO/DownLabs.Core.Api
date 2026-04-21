@@ -228,6 +228,12 @@ public static class AuthEndpoints
                 ? rolProp.GetString() ?? "cliente" 
                 : "cliente";
 
+                if (string.IsNullOrWhiteSpace(userId))
+                    return Results.Problem("No se pudo obtener el ID del usuario de Supabase", statusCode: 500);
+
+                if (string.IsNullOrWhiteSpace(accessToken))
+                    return Results.Problem("No se pudo obtener el token de acceso", statusCode: 500);
+
             // Obtener perfil según el rol
             object? perfil = rol.ToLowerInvariant() switch
             {

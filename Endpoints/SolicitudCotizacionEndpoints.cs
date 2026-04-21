@@ -7,7 +7,7 @@ namespace DownLabs.Core.Api.Endpoints;
 public static class SolicitudCotizacionEndpoints
 {
     private const string TableName = "solicitudes_cotizacion";
-    private const string IdColumn = "id_solicitud";
+    private const string IdColumn = "id_solicitud_cotizacion";
 
     public static void RegisterSolicitudCotizacionEndpoints(this WebApplication app)
     {
@@ -36,13 +36,6 @@ public static class SolicitudCotizacionEndpoints
 
             var solicitudes = await crudService.GetAllAsync<SolicitudCotizacion>(TableName, cancellationToken)
                 .ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                solicitudes = solicitudes.Where(s => 
-                    (s.descripcion_articulo?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)
-                ).ToList();
-            }
 
             if (!string.IsNullOrWhiteSpace(estado))
             {
@@ -112,11 +105,6 @@ public static class SolicitudCotizacionEndpoints
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(solicitud.descripcion_articulo))
-            {
-                return Results.BadRequest(new { success = false, error = "ValidationError", message = "La descripcion del articulo es requerida" });
-            }
-
             if (!solicitud.id_cliente.HasValue)
             {
                 return Results.BadRequest(new { success = false, error = "ValidationError", message = "El ID del cliente es requerido" });
@@ -129,17 +117,17 @@ public static class SolicitudCotizacionEndpoints
 
             if (string.IsNullOrWhiteSpace(solicitud.estado_solicitud))
             {
-                solicitud.estado_solicitud = "Pendiente";
+                solicitud.estado_solicitud = "pendiente";
             }
 
-            solicitud.id_solicitud = Guid.NewGuid();
+            solicitud.id_solicitud_cotizacion = Guid.NewGuid();
             solicitud.created_at = DateTime.UtcNow;
             solicitud.updated_at = DateTime.UtcNow;
 
             var created = await crudService.CreateAsync<SolicitudCotizacion>(TableName, solicitud, cancellationToken)
                 .ConfigureAwait(false);
             
-            return Results.Created($"/api/solicitudes-cotizacion/{created.id_solicitud}", new { success = true, data = created });
+            return Results.Created($"/api/solicitudes-cotizacion/{created.id_solicitud_cotizacion}", new { success = true, data = created });
         }
         catch (InvalidOperationException ex)
         {
@@ -161,7 +149,7 @@ public static class SolicitudCotizacionEndpoints
             if (existing is null)
                 return Results.NotFound(new { success = false, error = "NotFound", message = "Solicitud no encontrada" });
 
-            solicitud.id_solicitud = id;
+            solicitud.id_solicitud_cotizacion = id;
             solicitud.created_at = existing.created_at;
             solicitud.updated_at = DateTime.UtcNow;
 
@@ -190,14 +178,12 @@ public static class SolicitudCotizacionEndpoints
             if (existing is null)
                 return Results.NotFound(new { success = false, error = "NotFound", message = "Solicitud no encontrada" });
 
-            if (solicitudUpdate.descripcion_articulo is not null)
-                existing.descripcion_articulo = solicitudUpdate.descripcion_articulo;
-            if (solicitudUpdate.especificaciones_requeridas is not null)
-                existing.especificaciones_requeridas = solicitudUpdate.especificaciones_requeridas;
             if (solicitudUpdate.nivel_urgencia is not null)
                 existing.nivel_urgencia = solicitudUpdate.nivel_urgencia;
             if (solicitudUpdate.estado_solicitud is not null)
                 existing.estado_solicitud = solicitudUpdate.estado_solicitud;
+            if (solicitudUpdate.productos is not null)
+                existing.productos = solicitudUpdate.productos;
             
             existing.updated_at = DateTime.UtcNow;
 

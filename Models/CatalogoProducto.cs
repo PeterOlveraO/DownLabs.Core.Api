@@ -11,5 +11,4 @@ public class CatalogoProducto
     public int moq { get; set; } = 1;
     public DateTime? created_at { get; set; }
     public DateTime? updated_at { get; set; }
-    public decimal? precio_dwlabs { get; set; }
 }
