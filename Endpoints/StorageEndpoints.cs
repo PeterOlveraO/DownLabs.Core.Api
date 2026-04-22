@@ -16,7 +16,6 @@ public static class StorageEndpoints
             HttpRequest request,
             IConfiguration config) =>
         {
-            // Leer multipart form
             if (!request.HasFormContentType)
                 return Results.BadRequest(new { error = "Se requiere multipart/form-data" });
 
@@ -34,19 +33,15 @@ public static class StorageEndpoints
             if (!allowedTypes.Contains(file.ContentType))
                 return Results.BadRequest(new { error = "Tipo de archivo no permitido" });
 
-            // Configuración de Supabase
-            var supabaseUrl = config["Supabase:Url"];
-            var serviceKey  = config["Supabase:ServiceKey"];
+            var supabaseUrl = config["Supabase:Url"]
+                ?? throw new InvalidOperationException("Supabase:Url configuration is missing");
+            var serviceKey = config["Supabase:Key"]
+                ?? throw new InvalidOperationException("Supabase:Key configuration is missing");
 
-            if (string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(serviceKey))
-                return Results.Problem("Configuración de Supabase incompleta");
-
-            // Generar nombre único para el archivo
             var ext      = Path.GetExtension(file.FileName).ToLowerInvariant();
             var fileName = $"{proveedorId}/{Guid.NewGuid()}{ext}";
             var bucket   = "productos-imagenes";
 
-            // Subir a Supabase Storage via REST API
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("apikey", serviceKey);
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {serviceKey}");
@@ -64,7 +59,6 @@ public static class StorageEndpoints
                 return Results.Problem($"Error al subir imagen: {err}");
             }
 
-            // Construir URL pública
             var publicUrl = $"{supabaseUrl}/storage/v1/object/public/{bucket}/{fileName}";
             return Results.Ok(new { url = publicUrl });
         })
