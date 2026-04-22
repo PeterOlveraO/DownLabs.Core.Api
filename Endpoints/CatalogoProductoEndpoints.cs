@@ -106,6 +106,8 @@ public static class CatalogoProductoEndpoints
             if (fieldList.Contains("precio_mayorista")) dict["precio_mayorista"] = p.precio_mayorista;
             if (fieldList.Contains("descripcion")) dict["descripcion"] = p.descripcion;
             if (fieldList.Contains("moq")) dict["moq"] = p.moq;
+            if (fieldList.Contains("imagen_url")) dict["imagen_url"] = p.imagen_url;
+            if (fieldList.Contains("materiales")) dict["materiales"] = p.materiales;
             if (fieldList.Contains("created_at")) dict["created_at"] = p.created_at;
             if (fieldList.Contains("updated_at")) dict["updated_at"] = p.updated_at;
             result.Add(dict);
@@ -220,7 +222,11 @@ public static class CatalogoProductoEndpoints
                 existing.descripcion = productoUpdate.descripcion;
             if (productoUpdate.moq > 0)
                 existing.moq = productoUpdate.moq;
-            
+            if (productoUpdate.imagen_url is not null)
+                existing.imagen_url = productoUpdate.imagen_url;
+            if (productoUpdate.materiales is not null)
+                existing.materiales = productoUpdate.materiales;
+
             existing.updated_at = DateTime.UtcNow;
 
             var updated = await crudService.UpdateAsync<CatalogoProducto>(TableName, IdColumn, id, existing, cancellationToken)
