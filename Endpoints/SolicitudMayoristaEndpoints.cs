@@ -180,17 +180,17 @@ public static class SolicitudMayoristaEndpoints
                 existing.costo_envio = solicitudUpdate.costo_envio;
             if (solicitudUpdate.tiempo_entrega_dias.HasValue)
                 existing.tiempo_entrega_dias = solicitudUpdate.tiempo_entrega_dias;
-            if (!string.IsNullOrWhiteSpace(solicitudUpdate.notas_mayorista))
-                existing.notas_mayorista = solicitudUpdate.notas_mayorista;
+            if (!string.IsNullOrWhiteSpace(solicitudUpdate.notas_adicionales))
+                existing.notas_adicionales = solicitudUpdate.notas_adicionales;
             
 
             if (existing is null)
                 return Results.NotFound(new { success = false, error = "NotFound", message = "Solicitud a mayorista no encontrada" });
 
             if (solicitudUpdate.productos is not null)
-                existing.productos = solicitudUpdate.productos;
+                existing.productos = solicitudUpdate.productos ?? existing.productos;
             if (!string.IsNullOrWhiteSpace(solicitudUpdate.estado))
-                existing.estado = solicitudUpdate.estado;
+                existing.estado = solicitudUpdate.estado ?? existing.estado;
             if (solicitudUpdate.respondido_at.HasValue)
                 existing.respondido_at = solicitudUpdate.respondido_at;
             
