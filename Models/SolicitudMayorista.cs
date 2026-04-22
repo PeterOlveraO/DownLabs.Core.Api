@@ -10,4 +10,7 @@ public class SolicitudMayorista
     public DateTime? created_at { get; set; }
     public DateTime? updated_at { get; set; }
     public DateTime? respondido_at { get; set; }
+    public decimal? costo_envio        { get; set; }
+    public int?     tiempo_entrega_dias { get; set; }
+    public string?  notas_adicionales   { get; set; }
 }

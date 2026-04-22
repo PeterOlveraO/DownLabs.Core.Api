@@ -26,7 +26,6 @@ public static class SolicitudCotizacionEndpoints
         [FromQuery] string? search = null,
         [FromQuery] string? estado = null,
         [FromQuery] string? nivel_urgencia = null,
-        [FromQuery] Guid? id_cliente = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -45,11 +44,6 @@ public static class SolicitudCotizacionEndpoints
             if (!string.IsNullOrWhiteSpace(nivel_urgencia))
             {
                 solicitudes = solicitudes.Where(s => s.nivel_urgencia?.Equals(nivel_urgencia, StringComparison.OrdinalIgnoreCase) == true).ToList();
-            }
-
-            if (id_cliente.HasValue)
-            {
-                solicitudes = solicitudes.Where(s => s.id_cliente == id_cliente).ToList();
             }
 
             var total = solicitudes.Count;
@@ -105,11 +99,6 @@ public static class SolicitudCotizacionEndpoints
     {
         try
         {
-            if (!solicitud.id_cliente.HasValue)
-            {
-                return Results.BadRequest(new { success = false, error = "ValidationError", message = "El ID del cliente es requerido" });
-            }
-
             if (string.IsNullOrWhiteSpace(solicitud.nivel_urgencia))
             {
                 solicitud.nivel_urgencia = "Normal";

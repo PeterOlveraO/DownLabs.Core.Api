@@ -176,6 +176,14 @@ public static class SolicitudMayoristaEndpoints
             var existing = await crudService.GetByIdAsync<SolicitudMayorista>(TableName, IdColumn, id, cancellationToken)
                 .ConfigureAwait(false);
             
+            if (solicitudUpdate.costo_envio.HasValue) 
+                existing.costo_envio = solicitudUpdate.costo_envio;
+            if (solicitudUpdate.tiempo_entrega_dias.HasValue)
+                existing.tiempo_entrega_dias = solicitudUpdate.tiempo_entrega_dias;
+            if (!string.IsNullOrWhiteSpace(solicitudUpdate.notas_mayorista))
+                existing.notas_mayorista = solicitudUpdate.notas_mayorista;
+            
+
             if (existing is null)
                 return Results.NotFound(new { success = false, error = "NotFound", message = "Solicitud a mayorista no encontrada" });
 
