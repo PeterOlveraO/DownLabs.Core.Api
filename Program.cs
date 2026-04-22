@@ -36,6 +36,7 @@ app.RegisterPedidoCreditoEndpoints();
 app.RegisterPedidoRawEndpoints();
 app.RegisterSolicitudMayoristaEndpoints();
 app.RegisterAuthEndpoints();
+app.RegisterStorageEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "OK", timestamp = DateTime.UtcNow }));
 
