@@ -173,6 +173,15 @@ public static class PedidoRawEndpoints
                 existing.contenido_raw = pedidoUpdate.contenido_raw;
             if (!string.IsNullOrWhiteSpace(pedidoUpdate.estado))
                 existing.estado = pedidoUpdate.estado;
+                if (pedidoUpdate.especificaciones_tecnicas is not null)
+    existing.especificaciones_tecnicas = pedidoUpdate.especificaciones_tecnicas;
+    if (!string.IsNullOrWhiteSpace(pedidoUpdate.urgencia))
+{
+    if (pedidoUpdate.urgencia != "media" && pedidoUpdate.urgencia != "urgente")
+        return Results.BadRequest(new { success = false, error = "ValidationError", message = "urgencia debe ser 'media' o 'urgente'" });
+
+    existing.urgencia = pedidoUpdate.urgencia;
+}
 
             var updated = await crudService.UpdateAsync<PedidoRaw>(TableName, IdColumn, id, existing, cancellationToken)
                 .ConfigureAwait(false);
