@@ -36,7 +36,7 @@ public static class StorageEndpoints
 
             // Configuración de Supabase
             var supabaseUrl = config["Supabase:Url"];
-            var serviceKey  = config["Supabase:ServiceKey"];
+            var serviceKey  = config["Supabase:Key"];
 
             if (string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(serviceKey))
                 return Results.Problem("Configuración de Supabase incompleta");
@@ -50,6 +50,7 @@ public static class StorageEndpoints
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("apikey", serviceKey);
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {serviceKey}");
+            httpClient.DefaultRequestHeaders.Add("x-upsert", "true"); // ← agrega esto
 
             using var stream  = file.OpenReadStream();
             using var content = new StreamContent(stream);
