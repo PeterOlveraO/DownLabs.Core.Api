@@ -39,3 +39,8 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+
+#ia
+AGENTS.md
+.agents/
+skills-lock.json

@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DownLabs.Core.Api.Services;
 
@@ -8,6 +9,7 @@ public class CrudService : ICrudService
     private readonly string _url;
     private readonly string _key;
     private readonly HttpClient _httpClient;
+    private readonly JsonSerializerOptions _jsonOptions;
 
     public CrudService(IConfiguration configuration)
     {
@@ -20,6 +22,12 @@ public class CrudService : ICrudService
         _httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(30)
+        };
+        
+        _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
         
         ConfigureHeaders();
@@ -46,7 +54,7 @@ public class CrudService : ICrudService
             }
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>();
+            return JsonSerializer.Deserialize<List<T>>(json, _jsonOptions) ?? new List<T>();
         }
         catch (OperationCanceledException)
         {
@@ -68,7 +76,7 @@ public class CrudService : ICrudService
             }
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            var results = JsonSerializer.Deserialize<List<T>>(json);
+            var results = JsonSerializer.Deserialize<List<T>>(json, _jsonOptions);
             return results?.FirstOrDefault();
         }
         catch (OperationCanceledException)
@@ -81,8 +89,11 @@ public class CrudService : ICrudService
     {
         try
         {
+            var jsonData = JsonSerializer.Serialize(data, _jsonOptions);
+            Console.WriteLine($"[CRUD CREATE {tableName}] JSON enviado a Supabase: {jsonData}");
+
             var content = new StringContent(
-                JsonSerializer.Serialize(data),
+                jsonData,
                 System.Text.Encoding.UTF8,
                 "application/json"
             );
@@ -98,7 +109,8 @@ public class CrudService : ICrudService
             }
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<List<T>>(json)?.FirstOrDefault() 
+            Console.WriteLine($"[CRUD CREATE {tableName}] Respuesta de Supabase: {json}");
+            return JsonSerializer.Deserialize<List<T>>(json, _jsonOptions)?.FirstOrDefault() 
                 ?? throw new InvalidOperationException($"No se pudo obtener el registro creado de {tableName}");
         }
         catch (OperationCanceledException)
@@ -112,7 +124,7 @@ public class CrudService : ICrudService
         try
         {
             var content = new StringContent(
-                JsonSerializer.Serialize(data),
+                JsonSerializer.Serialize(data, _jsonOptions),
                 System.Text.Encoding.UTF8,
                 "application/json"
             );
@@ -128,7 +140,7 @@ public class CrudService : ICrudService
             }
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<List<T>>(json)?.FirstOrDefault() 
+            return JsonSerializer.Deserialize<List<T>>(json, _jsonOptions)?.FirstOrDefault() 
                 ?? throw new InvalidOperationException($"No se pudo obtener el registro actualizado de {tableName}");
         }
         catch (OperationCanceledException)

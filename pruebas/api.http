@@ -15,6 +15,10 @@
 ### rol: "cliente" | "mayorista" | "operador"
 ### Para clientes/mayoristas agregar: nombre_empresa
 ### Para operadores agregar: nombre, apellido
+
+GET {{host}}/api/catalogo-productos?id_mayorista=e6c956e3-d4ff-4da6-add4-09c9eae3e3e3&pageSize=100
+
+###
 POST {{host}}/api/auth/register
 Content-Type: application/json
 
@@ -23,6 +27,7 @@ Content-Type: application/json
   "password": "Test1234!",
   "rol": "cliente",
   "nombre_empresa": "Empresa Test"
+  
 }
 
 ### POST /api/auth/login - Iniciar sesión

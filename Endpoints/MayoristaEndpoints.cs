@@ -96,6 +96,8 @@ public static class MayoristaEndpoints
     {
         try
         {
+            Console.WriteLine($"[CREATE MAYORISTA] Datos recibidos del body - nombre_empresa: {mayorista.nombre_empresa}, ubicacion: {mayorista.ubicacion}, telefono_contacto: {mayorista.telefono_contacto}, rfc: {mayorista.rfc}, direccion_fiscal: {mayorista.direccion_fiscal}");
+
             if (string.IsNullOrWhiteSpace(mayorista.nombre_empresa))
             {
                 return Results.BadRequest(new { success = false, error = "ValidationError", message = "El nombre de la empresa es requerido" });
@@ -105,8 +107,12 @@ public static class MayoristaEndpoints
             mayorista.created_at = DateTime.UtcNow;
             mayorista.updated_at = DateTime.UtcNow;
 
+            Console.WriteLine($"[CREATE MAYORISTA] Objeto antes de guardar - {System.Text.Json.JsonSerializer.Serialize(mayorista)}");
+
             var created = await crudService.CreateAsync<Mayorista>(TableName, mayorista, cancellationToken)
                 .ConfigureAwait(false);
+            
+            Console.WriteLine($"[CREATE MAYORISTA] Respuesta de Supabase - id: {created.id_mayorista}, ubicacion: {created.ubicacion}, telefono_contacto: {created.telefono_contacto}, rfc: {created.rfc}, direccion_fiscal: {created.direccion_fiscal}");
             
             return Results.Created($"/api/mayoristas/{created.id_mayorista}", new { success = true, data = created });
         }
@@ -169,8 +175,8 @@ public static class MayoristaEndpoints
                 existing.telefono_contacto = mayoristaUpdate.telefono_contacto;
             if (mayoristaUpdate.rfc is not null)
                 existing.rfc = mayoristaUpdate.rfc;
-            if (mayoristaUpdate.nombre_operador is not null)
-                existing.nombre_operador = mayoristaUpdate.nombre_operador;
+            if (mayoristaUpdate.direccion_fiscal is not null)
+                existing.direccion_fiscal = mayoristaUpdate.direccion_fiscal;
             if (mayoristaUpdate.nivel_confianza > 0)
                 existing.nivel_confianza = mayoristaUpdate.nivel_confianza;
             

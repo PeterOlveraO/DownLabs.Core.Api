@@ -11,5 +11,5 @@ public class Mayorista
     public string? correo_contacto { get; set; }
     public string? telefono_contacto { get; set; }
     public string? rfc { get; set; }
-    public string? nombre_operador { get; set; }
+    public string? direccion_fiscal { get; set; }
 }
