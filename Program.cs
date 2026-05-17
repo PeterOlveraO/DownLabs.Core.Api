@@ -10,7 +10,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAstro", policy =>
     {
-        policy.WithOrigins("http://localhost:4321", "http://localhost:4322")
+        policy.WithOrigins("http://localhost:4321", "http://localhost:4322", "http://localhost:4323")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

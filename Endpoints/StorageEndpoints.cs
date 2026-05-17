@@ -2,13 +2,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
+using DownLabs.Core.Api.Models;
+using DownLabs.Core.Api.Services;
 
 namespace DownLabs.Core.Api.Endpoints;
 
 public static class StorageEndpoints
 {
-    private static readonly string[] AllowedTypes = { "image/jpeg", "image/png", "image/webp", "image/gif" };
-    private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+    private static readonly string[] AllowedTypes = { "image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf" };
+    private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf" };
 
     public static void RegisterStorageEndpoints(this WebApplication app)
     {
@@ -102,7 +104,84 @@ public static class StorageEndpoints
         })
         .DisableAntiforgery()
         .WithTags("Storage");
+
+        // POST /api/storage/upload-pdf
+        // Body: { base64: string, fileName: string, bucket?: string, idCotizacion?: guid }
+        // Retorna: { url: string }
+        app.MapPost("/api/storage/upload-pdf", async (
+            HttpRequest request,
+            IConfiguration config,
+            ICrudService crudService) =>
+        {
+            UploadPdfRequest? body;
+            try
+            {
+                body = await JsonSerializer.DeserializeAsync<UploadPdfRequest>(
+                    request.Body,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+            catch
+            {
+                return Results.BadRequest(new { error = "JSON inválido" });
+            }
+
+            if (body is null || string.IsNullOrWhiteSpace(body.Base64) || string.IsNullOrWhiteSpace(body.FileName))
+                return Results.BadRequest(new { error = "base64 y fileName son requeridos" });
+
+            var supabaseUrl = config["Supabase:Url"]
+                ?? throw new InvalidOperationException("Supabase:Url configuration is missing");
+            var serviceKey = config["Supabase:Key"]
+                ?? throw new InvalidOperationException("Supabase:Key configuration is missing");
+
+            var bucket = body.Bucket ?? "cotizaciones-pdf";
+
+            try
+            {
+                var fileBytes = Convert.FromBase64String(body.Base64);
+
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("apikey", serviceKey);
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {serviceKey}");
+                httpClient.DefaultRequestHeaders.Add("x-upsert", "true");
+
+                using var content = new ByteArrayContent(fileBytes);
+                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
+
+                var uploadUrl = $"{supabaseUrl}/storage/v1/object/{bucket}/{body.FileName}";
+                var response = await httpClient.PostAsync(uploadUrl, content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var err = await response.Content.ReadAsStringAsync();
+                    return Results.Problem($"Error al subir PDF: {err}");
+                }
+
+                var publicUrl = $"{supabaseUrl}/storage/v1/object/public/{bucket}/{body.FileName}";
+
+                if (body.IdCotizacion.HasValue)
+                {
+                    var existing = await crudService.GetByIdAsync<CotizacionDownlabs>(
+                        "cotizaciones_downlabs", "id_cotizaciondwnlabs", body.IdCotizacion.Value);
+                    if (existing != null)
+                    {
+                        existing.pdf_cotizacion_url = publicUrl;
+                        existing.updated_at = DateTime.UtcNow;
+                        await crudService.UpdateAsync<CotizacionDownlabs>(
+                            "cotizaciones_downlabs", "id_cotizaciondwnlabs", body.IdCotizacion.Value, existing);
+                    }
+                }
+
+                return Results.Ok(new { url = publicUrl });
+            }
+            catch (FormatException)
+            {
+                return Results.BadRequest(new { error = "base64 inválido" });
+            }
+        })
+        .DisableAntiforgery()
+        .WithTags("Storage");
     }
 
     private record UrlImagenRequest(string Url, string? ProveedorId);
+    private record UploadPdfRequest(string Base64, string FileName, string? Bucket, Guid? IdCotizacion);
 }

@@ -86,68 +86,65 @@ public class CrudService : ICrudService
     }
 
     public async Task<T> CreateAsync<T>(string tableName, object data, CancellationToken cancellationToken = default) where T : class
+{
+    try
     {
-        try
+        var jsonData = JsonSerializer.Serialize(data, _jsonOptions);
+        Console.WriteLine($"[CRUD CREATE {tableName}] JSON enviado a Supabase: {jsonData}");
+
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{_url}/rest/v1/{tableName}");
+        request.Headers.Add("Prefer", "return=representation");  // ✅ aquí
+        request.Content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
         {
-            var jsonData = JsonSerializer.Serialize(data, _jsonOptions);
-            Console.WriteLine($"[CRUD CREATE {tableName}] JSON enviado a Supabase: {jsonData}");
-
-            var content = new StringContent(
-                jsonData,
-                System.Text.Encoding.UTF8,
-                "application/json"
-            );
-            content.Headers.Add("Prefer", "return=representation");
-
-            var response = await _httpClient.PostAsync($"{_url}/rest/v1/{tableName}", content, cancellationToken)
-                .ConfigureAwait(false);
-            
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                throw new InvalidOperationException($"Error al crear en {tableName}: {error}");
-            }
-
-            var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            Console.WriteLine($"[CRUD CREATE {tableName}] Respuesta de Supabase: {json}");
-            return JsonSerializer.Deserialize<List<T>>(json, _jsonOptions)?.FirstOrDefault() 
-                ?? throw new InvalidOperationException($"No se pudo obtener el registro creado de {tableName}");
+            var error = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            Console.WriteLine($"[CRUD CREATE {tableName}] ERROR Supabase: {error}");
+            throw new InvalidOperationException($"Error al crear en {tableName}: {error}");
         }
-        catch (OperationCanceledException)
-        {
-            throw new OperationCanceledException($"Operacion cancelada al crear en {tableName}");
-        }
+
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        Console.WriteLine($"[CRUD CREATE {tableName}] Respuesta de Supabase: {json}");
+
+        return JsonSerializer.Deserialize<List<T>>(json, _jsonOptions)?.FirstOrDefault()
+            ?? throw new InvalidOperationException($"No se pudo obtener el registro creado de {tableName}");
     }
+    catch (OperationCanceledException)
+    {
+        throw new OperationCanceledException($"Operacion cancelada al crear en {tableName}");
+    }
+}
 
     public async Task<T> UpdateAsync<T>(string tableName, string idColumn, Guid id, object data, CancellationToken cancellationToken = default) where T : class
+{
+    try
     {
-        try
-        {
-            var content = new StringContent(
-                JsonSerializer.Serialize(data, _jsonOptions),
-                System.Text.Encoding.UTF8,
-                "application/json"
-            );
-            content.Headers.Add("Prefer", "return=representation");
+        var jsonData = JsonSerializer.Serialize(data, _jsonOptions);
 
-            var url = $"{_url}/rest/v1/{tableName}?{idColumn}=eq.{id}";
-            var response = await _httpClient.PatchAsync(url, content, cancellationToken).ConfigureAwait(false);
-            
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                throw new InvalidOperationException($"Error al actualizar {tableName}: {error}");
-            }
+        var request = new HttpRequestMessage(HttpMethod.Patch, $"{_url}/rest/v1/{tableName}?{idColumn}=eq.{id}");
+        request.Headers.Add("Prefer", "return=representation");  // ✅ aquí
+        request.Content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
 
-            var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<List<T>>(json, _jsonOptions)?.FirstOrDefault() 
-                ?? throw new InvalidOperationException($"No se pudo obtener el registro actualizado de {tableName}");
-        }
-        catch (OperationCanceledException)
+        var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
         {
-            throw new OperationCanceledException($"Operacion cancelada al actualizar {tableName}");
+            var error = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            Console.WriteLine($"[CRUD UPDATE {tableName}] ERROR Supabase: {error}");
+            throw new InvalidOperationException($"Error al actualizar {tableName}: {error}");
         }
+
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        return JsonSerializer.Deserialize<List<T>>(json, _jsonOptions)?.FirstOrDefault()
+            ?? throw new InvalidOperationException($"No se pudo obtener el registro actualizado de {tableName}");
     }
+    catch (OperationCanceledException)
+    {
+        throw new OperationCanceledException($"Operacion cancelada al actualizar {tableName}");
+    }
+}
 
     public async Task<bool> DeleteAsync(string tableName, string idColumn, Guid id, CancellationToken cancellationToken = default)
     {

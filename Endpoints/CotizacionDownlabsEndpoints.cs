@@ -15,6 +15,7 @@ public static class CotizacionDownlabsEndpoints
         app.MapGet("/api/cotizaciones/{id}", GetCotizacionByIdAsync);
         app.MapPost("/api/cotizaciones", CreateCotizacionAsync);
         app.MapPut("/api/cotizaciones/{id}", UpdateCotizacionAsync);
+        app.MapPut("/api/cotizaciones/{id}/ganancia", UpdateGananciaAsync);
         app.MapPatch("/api/cotizaciones/{id}", PartialUpdateCotizacionAsync);
         app.MapDelete("/api/cotizaciones/{id}", DeleteCotizacionAsync);
     }
@@ -171,6 +172,12 @@ public static class CotizacionDownlabsEndpoints
                 existing.costo_envio = cotizacionUpdate.costo_envio;
             if (!string.IsNullOrWhiteSpace(cotizacionUpdate.estado))
                 existing.estado = cotizacionUpdate.estado;
+            if (!string.IsNullOrWhiteSpace(cotizacionUpdate.pdf_cotizacion_url))
+                existing.pdf_cotizacion_url = cotizacionUpdate.pdf_cotizacion_url;
+            if (cotizacionUpdate.ganancia_downlabs > 0)
+                existing.ganancia_downlabs = cotizacionUpdate.ganancia_downlabs;
+            if (cotizacionUpdate.precio_final_cliente > 0)
+                existing.precio_final_cliente = cotizacionUpdate.precio_final_cliente;
             
             existing.updated_at = DateTime.UtcNow;
 
@@ -211,4 +218,37 @@ public static class CotizacionDownlabsEndpoints
             return Results.BadRequest(new { success = false, error = "BadRequest", message = ex.Message });
         }
     }
+
+    private static async Task<IResult> UpdateGananciaAsync(
+        [FromServices] ICrudService crudService,
+        Guid id,
+        [FromBody] GananciaUpdate gananciaUpdate,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var existing = await crudService.GetByIdAsync<CotizacionDownlabs>(TableName, IdColumn, id, cancellationToken)
+                .ConfigureAwait(false);
+            
+            if (existing is null)
+                return Results.NotFound(new { success = false, error = "NotFound" });
+
+            existing.ganancia_downlabs = gananciaUpdate.ganancia_downlabs;
+            existing.updated_at = DateTime.UtcNow;
+
+            var updated = await crudService.UpdateAsync<CotizacionDownlabs>(TableName, IdColumn, id, existing, cancellationToken)
+                .ConfigureAwait(false);
+            
+            return Results.Ok(new { success = true, data = updated });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { success = false, error = "BadRequest", message = ex.Message });
+        }
+    }
+}
+
+public class GananciaUpdate
+{
+    public decimal ganancia_downlabs { get; set; }
 }

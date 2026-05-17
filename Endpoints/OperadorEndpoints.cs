@@ -16,6 +16,7 @@ public static class OperadorEndpoints
         app.MapPost("/api/operadores", CreateOperador);
         app.MapPut("/api/operadores/{id}", UpdateOperador);
         app.MapPatch("/api/operadores/{id}", PartialUpdateOperador);
+        app.MapPost("/api/operadores/{id}/toggle-activo", ToggleActivoOperador);
         app.MapDelete("/api/operadores/{id}", DeleteOperador);
     }
 
@@ -184,9 +185,35 @@ public static class OperadorEndpoints
                 existing.email = operadorUpdate.email;
             if (operadorUpdate.telefono is not null)
                 existing.telefono = operadorUpdate.telefono;
-            if (operadorUpdate.activo)
-                existing.activo = operadorUpdate.activo;
+            existing.activo = operadorUpdate.activo;
             
+            existing.updated_at = DateTime.UtcNow;
+
+            var updated = await crudService.UpdateAsync<Operador>(TableName, IdColumn, id, existing, cancellationToken)
+                .ConfigureAwait(false);
+            
+            return Results.Ok(new { success = true, data = updated });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { success = false, error = "BadRequest", message = ex.Message });
+        }
+    }
+
+    private static async Task<IResult> ToggleActivoOperador(
+        [FromServices] ICrudService crudService,
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var existing = await crudService.GetByIdAsync<Operador>(TableName, IdColumn, id, cancellationToken)
+                .ConfigureAwait(false);
+            
+            if (existing is null)
+                return Results.NotFound(new { success = false, error = "NotFound", message = "Operador no encontrado" });
+
+            existing.activo = !existing.activo;
             existing.updated_at = DateTime.UtcNow;
 
             var updated = await crudService.UpdateAsync<Operador>(TableName, IdColumn, id, existing, cancellationToken)

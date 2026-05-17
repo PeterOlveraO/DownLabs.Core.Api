@@ -13,4 +13,5 @@ public class CotizacionDownlabs
     public decimal costos_operacion { get; set; }
     public decimal ganancia_downlabs { get; set; }
     public decimal precio_final_cliente { get; set; }
+    public string? pdf_cotizacion_url { get; set; }
 }

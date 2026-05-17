@@ -14,4 +14,6 @@ public class Operador
     public bool activo { get; set; } = true;
     public DateTime? created_at { get; set; }
     public DateTime? updated_at { get; set; }
+    [JsonPropertyName("is_admin")]
+    public bool is_admin { get; set; } = false;
 }

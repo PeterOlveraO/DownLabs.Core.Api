@@ -21,6 +21,7 @@ public static class AuthEndpoints
         var group = app.MapGroup("/api/auth");
         group.MapPost("/register", RegisterAsync);
         group.MapPost("/login", LoginAsync);
+
     }
 
     private static async Task<IResult> RegisterAsync(
@@ -48,6 +49,9 @@ public static class AuthEndpoints
         {
             { "rol", request.Rol }
         };
+
+        if (rol == "operador")
+            metadata["is_admin"] = request.IsAdmin;
 
         if (!string.IsNullOrWhiteSpace(request.NombreEmpresa))
             metadata["nombre_empresa"] = request.NombreEmpresa;
@@ -142,21 +146,21 @@ public static class AuthEndpoints
         {
             if (string.IsNullOrWhiteSpace(request.Email))
             {
-                return Results.BadRequest(new 
-                { 
-                    success = false, 
-                    error = "ValidationError", 
-                    message = "El email es requerido" 
+                return Results.BadRequest(new
+                {
+                    success = false,
+                    error = "ValidationError",
+                    message = "El email es requerido"
                 });
             }
 
             if (string.IsNullOrWhiteSpace(request.Password))
             {
-                return Results.BadRequest(new 
-                { 
-                    success = false, 
-                    error = "ValidationError", 
-                    message = "La contraseña es requerida" 
+                return Results.BadRequest(new
+                {
+                    success = false,
+                    error = "ValidationError",
+                    message = "La contraseña es requerida"
                 });
             }
 
@@ -171,7 +175,7 @@ public static class AuthEndpoints
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Clear();
             httpClient.DefaultRequestHeaders.Add("apikey", supabaseKey);
-            
+
             var content = new StringContent(
                 JsonSerializer.Serialize(loginPayload),
                 System.Text.Encoding.UTF8,
@@ -186,11 +190,11 @@ public static class AuthEndpoints
 
             if (!response.IsSuccessStatusCode)
             {
-                return Results.BadRequest(new 
-                { 
-                    success = false, 
-                    error = "Unauthorized", 
-                    message = $"Email o contraseña incorrectos." 
+                return Results.BadRequest(new
+                {
+                    success = false,
+                    error = "Unauthorized",
+                    message = $"Email o contraseña incorrectos."
                 });
             }
 
@@ -202,8 +206,8 @@ public static class AuthEndpoints
             var userEmail = user.GetProperty("email").GetString();
             var userMetadata = user.GetProperty("user_metadata");
 
-            var rol = userMetadata.TryGetProperty("rol", out var rolProp) 
-                ? rolProp.GetString() ?? "cliente" 
+            var rol = userMetadata.TryGetProperty("rol", out var rolProp)
+                ? rolProp.GetString() ?? "cliente"
                 : "cliente";
 
                 if (string.IsNullOrWhiteSpace(userId))
@@ -213,9 +217,6 @@ public static class AuthEndpoints
                     return Results.Problem("No se pudo obtener el token de acceso", statusCode: 500);
 
             // Obtener perfil según el rol
-           
-           
-// Obtener perfil según el rol
 object? perfil = rol.ToLowerInvariant() switch
 {
     "cliente"   => await crudService.GetByIdAsync<Models.Cliente>("clientes", "id_cliente", Guid.Parse(userId!), cancellationToken).ConfigureAwait(false),
@@ -224,6 +225,8 @@ object? perfil = rol.ToLowerInvariant() switch
     _ => null
 };
 
+var isAdmin = rol == "operador" ? (perfil as Models.Operador)?.is_admin : null;
+
 return Results.Ok(new
 {
     success = true,
@@ -231,9 +234,10 @@ return Results.Ok(new
     {
         access_token = accessToken,
         token_type = "Bearer",
-        user_id = userId,    // ← el Astro lo lee como data.data.user_id
+        user_id = userId,
         email = userEmail,
         rol = rol,
+        is_admin = isAdmin,
         perfil = perfil
     }
 });
@@ -247,6 +251,7 @@ return Results.Ok(new
             return Results.Problem($"Error interno: {ex.Message}", statusCode: 500);
         }
     }
+
 public class RegisterRequest
 {
     [JsonPropertyName("email")]
@@ -278,6 +283,9 @@ public class RegisterRequest
 
     [JsonPropertyName("ubicacion")]
     public string? Ubicacion { get; set; }
+
+    [JsonPropertyName("is_admin")]
+    public bool IsAdmin { get; set; } = false;
 }
 
 public class LoginRequest
